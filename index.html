@@ -1,10 +1,14 @@
+<!-- Heavily inspired by: https://russellgoldenberg.github.io/scrollama/sticky-side/ -->
+
 <!DOCTYPE html>
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Economic Guide to College Majors</title>
 
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://russellgoldenberg.github.io/scrollama/style.css" crossorigin="anonymous">
 
   <!-- Custom CSS -->
   <style>
@@ -38,7 +42,7 @@
       -webkit-transform: translate3d(0, 0, 0);
       -moz-transform: translate3d(0, 0, 0);
       transform: translate3d(0, 0, 0);
-      background-color: #8a8a8a;
+      /*background-color: #8a8a8a;*/
     }
 
     figure p {
@@ -52,7 +56,7 @@
       transform: translate(-50%, -50%);
       font-size: 8rem;
       font-weight: 900;
-      color: #fff;
+      /*color: #fff;*/
     }
 
 
@@ -82,28 +86,32 @@
 <body>
   <main>
     <section id='intro'>
-      <h1 class='intro__hed'>Basic Example</h1>
+      <h1 class='intro__hed'>Economic Guide to College Majors</h1>
       <p class='intro__dek'>
-        Start scrolling to see how it works.
+        Start scrolling to explore.
       </p>
     </section>
     <section id='scrolly'>
       <article>
-        <div class='step' data-step='1'>
-          <p>STEP 1</p>
+        <div class='step' data-step='Median'>
+          <p>Median Income</p>
         </div>
-        <div class='step' data-step='2'>
-          <p>STEP 2</p>
+        <div class='step' data-step='Total'>
+          <p>Total</p>
         </div>
-        <div class='step' data-step='3'>
-          <p>STEP 3</p>
+        <div class='step' data-step='women'>
+          <p>Share of Women</p>
         </div>
-        <div class='step' data-step='4'>
-          <p>STEP 4</p>
+        <div class='step' data-step='Percent_college_jobs'>
+          <p>% College jobs</p>
         </div>
       </article>
       <figure>
-        <p>0</p>
+        <p>
+          <svg width="1000" height="550">
+            <!-- <circle cx="50" cy="50" r="40" stroke="green" stroke-width="4" fill="yellow" /> -->
+          </svg>
+        </p>
       </figure>
     </section>
     <section id='outro'></section>
@@ -120,79 +128,8 @@
   <!-- D3 -->
   <script src='https://unpkg.com/d3@5.9.1/dist/d3.min.js'></script>
 
-  <script>
-    // using d3 for convenience
-    var main = d3.select('main')
-    var scrolly = main.select('#scrolly');
-    var figure = scrolly.select('figure');
-    var article = scrolly.select('article');
-    var step = article.selectAll('.step');
-
-    // initialize the scrollama
-    var scroller = scrollama();
-
-    // generic window resize listener event
-    function handleResize() {
-      // 1. update height of step elements
-      var stepH = Math.floor(window.innerHeight * 0.75);
-      step.style('height', stepH + 'px');
-
-      var figureHeight = window.innerHeight / 2
-      var figureMarginTop = (window.innerHeight - figureHeight) / 2  
-
-      figure
-        .style('height', figureHeight + 'px')
-        .style('top', figureMarginTop + 'px');
-
-
-      // 3. tell scrollama to update new element dimensions
-      scroller.resize();
-    }
-
-    // scrollama event handlers
-    function handleStepEnter(response) {
-      console.log(response)
-      // response = { element, direction, index }
-
-      // add color to current step only
-      step.classed('is-active', function (d, i) {
-        return i === response.index;
-      })
-
-      // update graphic based on step
-      figure.select('p').text(response.index + 1);
-    }
-
-    function setupStickyfill() {
-      d3.selectAll('.sticky').each(function () {
-        Stickyfill.add(this);
-      });
-    }
-
-    function init() {
-      setupStickyfill();
-
-      // 1. force a resize on load to ensure proper dimensions are sent to scrollama
-      handleResize();
-
-      // 2. setup the scroller passing options
-      //    this will also initialize trigger observations
-      // 3. bind scrollama event handlers (this can be chained like below)
-      scroller.setup({
-        step: '#scrolly article .step',
-        offset: 0.33,
-        debug: true,
-      })
-        .onStepEnter(handleStepEnter)
-
-
-      // setup resize event
-      window.addEventListener('resize', handleResize);
-    }
-
-    // kick things off
-    init();
-  </script>
+  <!-- Our main logic -->
+  <script type="text/javascript" src="script.js"></script>
 
 </body>
 </html>
