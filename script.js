@@ -6,12 +6,17 @@ var xBar, yBar, xAxisBar, yAxisBar;
 var aggData;
 var barChart;
 
-const marginBar = ({
+const marginBar = {
   bottom: 100,
   left: 100,
   right: 100,
   top: 100
-});
+};
+
+const axisLabelPos = {
+  yAxis: 40
+}
+
 const legend = [{gender: 'Male', color: 'steelblue', y: marginBar.top}, {gender: 'Female', color: 'red', y: marginBar.top + 20}]
 
 // Data files
@@ -36,7 +41,7 @@ d3.csv("https://gist.githubusercontent.com/shpach/6413032be4ce6e57c46d84458c21dd
       College_jobs: parseInt(data.College_jobs),
       Non_college_jobs: parseInt(data.Non_college_jobs),
       Low_wage_jobs: parseInt(data.Low_wage_jobs),
-      Percent_college_jobs: parseFloat(data.PercentCollegeJobs)
+      Percent_college_jobs: parseFloat(data.PercentCollegeJobs) * 100
     }
   }
 ).then(createChart);
@@ -73,11 +78,10 @@ function handleResize() {
 
 // scrollama event handlers
 function handleStepEnter(response) {
+  // response = { element, direction, index }
   console.log(response);
   CURRENT_STEP = d3.select(response.element).attr('data-step');
   console.log(CURRENT_STEP);
-  // console.log(getActiveStep());
-  // response = { element, direction, index }
 
   // add color to current step only
   step.classed('is-active', function (d, i) {
@@ -126,12 +130,11 @@ function createChart(data) {
 
   setupAxes();
   setupGraph();
-  // barChart.update();
 }
 
 function setupGraph() {
   
-  const LEGEND_X = 500;
+  const LEGEND_X = 800;
   const LEGEND_SIZE = 10;
     
   xBar.domain(aggData.map(d => d.Major_category));
@@ -148,6 +151,7 @@ function setupGraph() {
       .attr("transform", d => rotate(xBar(d.Major_category), yBar(0), 180))
       .attr("width", xBar.bandwidth());
 
+  // Need special logic for Share of Women bar since it is overlayed for the stacked bar chart
   const womenBar = svg.append("g")
       .attr("fill", "red")
       .selectAll("rect")
@@ -158,7 +162,6 @@ function setupGraph() {
       .attr("y", 0)
       .attr("transform", d => rotate(xBar(d.Major_category), yBar(0), 180))
       .attr("width", xBar.bandwidth())
-      // .attr("height", d => yBar(0) - yBar(d['ShareWomen'] * d['Total']))
       .style("opacity", 0);
   
   
@@ -185,20 +188,7 @@ function setupGraph() {
 
   svg.node().update = (o) => {
 
-    // const t = svg.transition()
-    //   .duration(750);
-
-    // gx = svg.append("g")
-    //     .call(xAxisBar)
-    //     .selectAll("text")  
-    //     .style("text-anchor", "end")
-    //     .attr("dx", "-.8em")
-    //     .attr("dy", ".15em")
-    //     .attr("transform", "rotate(-60)" );
-
-
     if(CURRENT_STEP === 'women'){
-      // console.log(yBar['Total'])
 
       yBar = d3.scaleLinear()
         .domain([0, d3.max(aggData, d => d['Total'])]).nice()
@@ -253,10 +243,14 @@ function setupGraph() {
       .call(d3.axisLeft(yBar))
       .call(g => g.select(".domain").remove());
 
-    // gy = svg.append("g")
-    //   .call(yAxisBar);
-    // gy = gy.selectAll("g")
-    //   .call(yAxisBar);
+    // Animate y-axis on rescale between different graphs
+    svg.select(".y-axes")
+      .transition()
+      .call(yAxisBar);
+
+    svg.select(".y-label")
+      .transition()
+      .text(CURRENT_STEP);
     
   };
 
@@ -288,10 +282,18 @@ function setupAxes() {
       .style("text-anchor", "end")
       .attr("dx", "-.8em")
       .attr("dy", ".15em")
-      .attr("transform", "rotate(-60)" );
+      .attr("transform", "rotate(-60)");
 
   gy = svg.append("g")
+      .attr("class", "y-axes")
       .call(yAxisBar);
+
+  yLabel = svg.append("text")
+    .attr("class", "y-label")
+    .attr("transform", rotate(axisLabelPos.yAxis, HEIGHT/2, -90))
+    .style("text-anchor", "middle")
+    .attr("font-size", "11px")
+    .text("Median");
 }
 
 function rotate(x, y, r) {
@@ -299,5 +301,4 @@ function rotate(x, y, r) {
 }
 
 
-// kick things off
 init();

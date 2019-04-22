@@ -8,9 +8,9 @@
 
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://russellgoldenberg.github.io/scrollama/style.css" crossorigin="anonymous">
+  <link rel="stylesheet" type="text/css" href="style.css">
 
-  <!-- Custom CSS -->
+  <!-- Scrollama specific CSS for readability-->
   <style>
     #scrolly {
       position: relative;
@@ -27,7 +27,6 @@
       flex: 1;
     }
 
-
     article {
       position: relative;
       padding: 0 1rem;
@@ -42,7 +41,6 @@
       -webkit-transform: translate3d(0, 0, 0);
       -moz-transform: translate3d(0, 0, 0);
       transform: translate3d(0, 0, 0);
-      /*background-color: #8a8a8a;*/
     }
 
     figure p {
@@ -56,7 +54,6 @@
       transform: translate(-50%, -50%);
       font-size: 8rem;
       font-weight: 900;
-      /*color: #fff;*/
     }
 
 
@@ -80,12 +77,13 @@
       padding: 1rem;
       font-size: 1.5rem;
     }
+
   </style>
 </head>
 
 <body>
   <main>
-    <section id='intro'>
+    <section id='intro' class='whole-page'>
       <h1 class='intro__hed'>Economic Guide to College Majors</h1>
       <p class='intro__dek'>
         Start scrolling to explore.
