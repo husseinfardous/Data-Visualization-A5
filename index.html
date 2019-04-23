@@ -29,7 +29,7 @@
 
     article {
       position: relative;
-      padding: 0 1rem;
+      padding: 0 rem;
       max-width: 20rem;
     }
 
@@ -40,13 +40,13 @@
       margin: 0;
       -webkit-transform: translate3d(0, 0, 0);
       -moz-transform: translate3d(0, 0, 0);
-      transform: translate3d(0, 0, 0);
+      transform: translate3d(100, 0, 0);
     }
 
     figure p {
       text-align: center;
-      padding: 1rem;
-      position: absolute;
+/*      padding: 10rem;*/
+      position: relative;
       top: 50%;
       left: 50%;
       -moz-transform: translate(-50%, -50%);
@@ -75,8 +75,17 @@
     .step p {
       text-align: center;
       padding: 1rem;
-      font-size: 1.5rem;
+      font-size: 1.2rem;
     }
+      
+    .vertical-center {
+          margin: 0;
+        font-size:1vw;
+          position: relative;
+          top: 50%;
+          -ms-transform: translateY(-50%);
+          transform: translateY(-50%);
+      }
 
   </style>
 </head>
@@ -93,21 +102,30 @@
       <article>
         <div class='step' data-step='Median'>
           <p>Median Income</p>
+            <article class=vertical-center> Most of us are aware that a student’s choice of major can has a significant effect on the course of their life. For example, we know that students studying engineering get access to some of the most financially lucrative professions out there.
+            </article>
         </div>
         <div class='step' data-step='Total'>
           <p>Total</p>
+            <article class=vertical-center> Further, we see that some types of majors provide access to more exclusive careers than others. For example, only 30% of Business majors end up in jobs requiring a four-year degree, compared to 70% of Education majors.
+            </article>
         </div>
         <div class='step' data-step='women'>
           <p>Share of Women</p>
+            <article class=vertical-center>
+            What’s more, we see that men and women distribute themselves differently across these major categories. In particular, note that Engineering majors—those which tend to pay the most—are male dominated, while at the other end of expected outcomes, the Psychology & Social Work majors are female dominated.
+            </article>
         </div>
         <div class='step' data-step='Percent_college_jobs'>
           <p>% College jobs</p>
+             <article class=vertical-center> So, there are multiple factors which influence a student’s choice. This becomes obvious as we explore how the population of recent graduates is distributed among these major categories.
+            </article>
         </div>
       </article>
       <figure>
         <p>
           <svg width="1000" height="550">
-            <!-- <circle cx="50" cy="50" r="40" stroke="green" stroke-width="4" fill="yellow" /> -->
+<!--             <circle cx="50" cy="50" r="40" stroke="green" stroke-width="4" fill="yellow" /> -->
           </svg>
         </p>
       </figure>
