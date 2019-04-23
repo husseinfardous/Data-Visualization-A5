@@ -2,6 +2,8 @@
 WIDTH = 1000;
 HEIGHT = 550;
 
+T_DURATION = 1000;
+
 var xBar, yBar, xAxisBar, yAxisBar;
 var aggData;
 var barChart;
@@ -112,7 +114,7 @@ function init() {
   // 3. bind scrollama event handlers (this can be chained like below)
   scroller.setup({
     step: '#scrolly article .step',
-    offset: 0.33,
+    offset: 0.5,
     // debug: true,
   })
     .onStepEnter(handleStepEnter)
@@ -197,22 +199,22 @@ function setupGraph() {
       womenBar
         .attr("height", d => yBar(0) - yBar(d['ShareWomen'] * d['Total']))
         .transition()
-        .duration(1500)
+        .duration(T_DURATION)
         .style("opacity", 1);
       
       barLegends.transition()
-        .duration(1500)
+        .duration(T_DURATION)
         .style("opacity", 1);
       
       bar.data(aggData, d => d.Major_category)
-        // .transition()
-        // .duration(1500)
+        .transition()
+        .duration(T_DURATION)
         .attr("height", d => yBar(0) - yBar(d['Total']))
         // .attr("y", d => yBar(0));
       
       // bar.data(aggData, d => d.Major_category)
       //   .transition()
-      //   .duration(1500)
+      //   .duration(T_DURATION)
       //   .attr("height", d => yBar(0) - yBar(d['Total'] * (1 - d['ShareWomen'])))
       //   .attr("y", d => yBar(0) - yBar(d['ShareWomen'] * d['Total']));
 
@@ -225,16 +227,16 @@ function setupGraph() {
         .range([HEIGHT - marginBar.bottom, marginBar.top]);
 
       barLegends.transition()
-        .duration(1500)
+        .duration(T_DURATION)
         .style("opacity", 0);
 
       bar.data(aggData, d => d.Major_category)
       .transition()
-      .duration(1500)
+      .duration(T_DURATION)
       .attr("height", d => yBar(0) - yBar(d[o])); 
       
       womenBar.transition()
-        .duration(1500)
+        .duration(T_DURATION)
         .style("opacity", 0);
     }
 
