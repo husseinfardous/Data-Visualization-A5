@@ -138,6 +138,11 @@ function setupGraph() {
   
   const LEGEND_X = 800;
   const LEGEND_SIZE = 10;
+
+  const titles = {  "Median" : "Median Yearly Income",
+                    "Total" : "# of Students",
+                    "women" : "# of Students",
+                    "Percent_college_jobs" : "% of Graduates in Jobs Requiring College Degree"}
     
   xBar.domain(aggData.map(d => d.Major_category));
   
@@ -252,7 +257,7 @@ function setupGraph() {
 
     svg.select(".y-label")
       .transition()
-      .text(CURRENT_STEP);
+      .text(titles[CURRENT_STEP]);
     
   };
 
@@ -284,7 +289,7 @@ function setupAxes() {
       .style("text-anchor", "end")
       .attr("dx", "-.8em")
       .attr("dy", ".15em")
-      .attr("transform", "rotate(-60)");
+      .attr("transform", "rotate(-30)");
 
   gy = svg.append("g")
       .attr("class", "y-axes")
