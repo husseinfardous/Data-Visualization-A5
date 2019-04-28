@@ -265,7 +265,7 @@ function setupBarGraph() {
       svg.transition()
       .duration(T_DURATION)
       .attr('display', 'none');
-      return;
+        return;
     }
     else{
       svg.attr('display', 'true')
@@ -462,6 +462,13 @@ function setupScatterPlot(){
      .style("text-anchor", "end")
      .style("font-size", "13px")
      .text(function(d) { return d; });
+
+//    splotXLabel = splotSvg.append("text")
+//    .attr("class", "y-label")
+//    .attr("transform", rotate(axisLabelPos.yAxis, SPLOT_WIDTH/2, -90))
+//    .style("text-anchor", "middle")
+//    .attr("font-size", "11px")
+//    .text("Median");
   
   splotSvg.node().update = () => {
 
@@ -487,6 +494,8 @@ function setupScatterPlot(){
         .attr("cy", d => splot_unemp_y(d.Unemployment_rate))
         .attr("r", r)
         .style("fill", d => splot_color(d.Major_category));
+      
+      g.call(splot_unemp_yAxis);
 
     }
     else if(CURRENT_STEP === 'splot2'){
@@ -509,7 +518,10 @@ function setupScatterPlot(){
         .attr("cx", d => splot_x(d.Median))
         .attr("cy", d => splot_women_y(d.ShareWomen))
         .attr("r", r)
-        .style("fill", d => splot_color(d.Major_category));    
+        .style("fill", d => splot_color(d.Major_category));  
+        
+        
+      g.call(splot_women_yAxis);
       }
   }
   
@@ -642,7 +654,7 @@ function setupSplotAxes(){
     .attr("fill", "#000")
     .attr("font-weight", "bold")
     .attr("text-anchor", "end")
-    .text(splot_data.Median)
+//    .text(splot_data.Median)
   );
 
   splot_unemp_yAxis = g => g.attr("transform", `translate(${splot_margin.left}, 0)`)
@@ -667,7 +679,7 @@ function setupSplotAxes(){
 
 
   splotSvg.append("g").call(splot_xAxis);
-  splotSvg.append("g").call(splot_unemp_yAxis);
+  
 }
 
 
