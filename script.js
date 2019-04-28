@@ -18,6 +18,7 @@ const marginBar = {
 var splot_x, splot_unemp_y, splot_women_y;
 var splot_xAxis, splot_unemp_yAxis, splot_women_yAxis;
 var splot_unemp_rects, splot_women_rects;
+var splot_circles;
 var splot_data, major_categs, medians, unemp_rates, share_women;
 var major_categs_colors = ["#800000", "#9A6324", "#808000", "#469990", "#000075", "#000000", "#e6194B", "#f58231", "#a9a9a9", "#bfef45", "#3cb44b", "#42d4f4", "#4363d8", "#911eb4", "#f032e6", "#ffe119"];
 var splot;
@@ -37,6 +38,8 @@ const axisLabelPos = {
 }
 
 const legend = [{gender: 'Male', color: 'steelblue', y: marginBar.top}, {gender: 'Female', color: 'red', y: marginBar.top + 20}]
+
+// const status = html`<code> highlight: none </code>`;
 
 // Data files
 d3.csv("https://gist.githubusercontent.com/shpach/6413032be4ce6e57c46d84458c21dd38/raw/184af816311e3938f9ebd2c80d8f51d3b9a79cfe/agg-recent-grads.csv",
@@ -132,8 +135,31 @@ function handleStepEnter(response) {
   })
 
   // update graphic based on step
+   if(CURRENT_STEP.startsWith('splot')){
+      svg.transition()
+      .duration(T_DURATION)
+      .attr('display', 'none');
+
+      splotSvg.transition()
+        .duration(T_DURATION)
+        .attr('display', 'true');
+
+      splot.update();
+      configureCircleInteractions();
+    }
+  else{
+    splotSvg.transition()
+      .duration(T_DURATION)
+      .attr('display', 'none');
+
+    svg.transition()
+        .duration(T_DURATION)
+        .attr('display', 'true');
+    barChart.update(CURRENT_STEP);
+  }
   barChart.update(CURRENT_STEP);
-  splot.update();
+  // splot.update();
+  // configureCircleInteractions();
 }
 
 function setupStickyfill() {
@@ -235,7 +261,7 @@ function setupBarGraph() {
   svg.node().update = (o) => {
 
     // Visibility switch
-    if(CURRENT_STEP === 'splot'){
+    if(CURRENT_STEP.startsWith('splot')){
       svg.transition()
       .duration(T_DURATION)
       .attr('display', 'none');
@@ -265,7 +291,7 @@ function setupBarGraph() {
       bar.data(aggData, d => d.Major_category)
         .transition()
         .duration(T_DURATION)
-        .attr("height", d => yBar(0) - yBar(d['Total']))
+        .attr("height", d => yBar(0) - yBar(d['Total']));
         // .attr("y", d => yBar(0));
       
       // bar.data(aggData, d => d.Major_category)
@@ -358,7 +384,7 @@ function setupAxes() {
 /****** Scatter Plot ******/
 function createSplotChart(data) {
   splot_data = data;
-  console.log(splot_data);
+
   // Secondary data filtering
   major_categs = d3.set(splot_data, d => d.Major_category);
   medians = splot_data.map((value, index) => value.Median);
@@ -398,21 +424,22 @@ function setupScatterPlot(){
     .data(splot_unemp_rects)
     .enter()
     .append("rect")
-    .attr("x", d => d.x)
-    .attr("width", d => d.width)
-    .attr("y", d => d.y)
-    .attr("height", d => d.height)
-    .attr("fill", "#808080")
-    .attr("opacity", "0.75");
+  //   .attr("x", d => d.x)
+  //   .attr("width", d => d.width)
+  //   .attr("y", d => d.y)
+  //   .attr("height", d => d.height)
+  //   .attr("fill", "#808080")
+  //   .attr("opacity", "0.75");
   
   g.selectAll("circle")
-    .data(splot_data)
+    .data(splot_data, d => d.Major)
     .enter()
     .append("circle")
-      .attr("cx", d => splot_x(d.Median))
-      .attr("cy", d => splot_unemp_y(d.Unemployment_rate))
-      .attr("r", r)
-      .style("fill", d => splot_color(d.Major_category));
+  //   .attr("cx", d => splot_x(d.Median))
+  //   .attr("cy", d => splot_unemp_y(d.Unemployment_rate))
+  //   .attr("r", r)
+  //   .style("fill", d => splot_color(d.Major_category));
+
 
   splotSvg.append("g").attr("id", "annotation");
   
@@ -422,54 +449,170 @@ function setupScatterPlot(){
       .attr("class", "legend")
       .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
   
-  splotLegend.append("rect")
-    .attr("x", SPLOT_WIDTH - 18)
-    .attr("width", 18)
-    .attr("height", 18)
-    .style("fill", splot_color);
+   splotLegend.append("rect")
+     .attr("x", SPLOT_WIDTH - 18)
+     .attr("width", 18)
+     .attr("height", 18)
+     .style("fill", splot_color);
 
-  splotLegend.append("text")
-    .attr("x", SPLOT_WIDTH - 24)
-    .attr("y", 9)
-    .attr("dy", ".35em")
-    .style("text-anchor", "end")
-    .text(function(d) { return d; });
+   splotLegend.append("text")
+     .attr("x", SPLOT_WIDTH - 24)
+     .attr("y", 9)
+     .attr("dy", ".35em")
+     .style("text-anchor", "end")
+     .style("font-size", "13px")
+     .text(function(d) { return d; });
   
   splotSvg.node().update = () => {
-    // Visibility switch
-    if(CURRENT_STEP !== 'splot'){
-      splotSvg.attr('display', 'none');
-      return;
-    }
-    else{
-      splotSvg.attr('display', 'true')
-    }
-  }
 
-  /*svg.node().update = () => {
-    
-    g.selectAll("rect")
-      .data(splot_women_rects)
+    if(CURRENT_STEP === 'splot1'){
+      g.selectAll("rect")
+        .data(splot_unemp_rects)
+        .transition()
+        .duration(T_DURATION)
+        // .ease(d3.easeLinear)
         .attr("x", d => d.x)
         .attr("width", d => d.width)
         .attr("y", d => d.y)
         .attr("height", d => d.height)
         .attr("fill", "#808080")
         .attr("opacity", "0.75");
-  
-    g.selectAll("circle")
-      .data(splot_data)
-      .transition()
-      .duration(800)
-      .ease(d3.easeLinear)
+      
+      g.selectAll("circle")
+        .data(splot_data, d => d.Major)
+        .transition()
+        .duration(T_DURATION)
+        // .ease(d3.easeLinear)
+        .attr("cx", d => splot_x(d.Median))
+        .attr("cy", d => splot_unemp_y(d.Unemployment_rate))
+        .attr("r", r)
+        .style("fill", d => splot_color(d.Major_category));
+
+    }
+    else if(CURRENT_STEP === 'splot2'){
+      g.selectAll("rect")
+        .data(splot_women_rects)
+        .transition()
+        .duration(T_DURATION)
+        .attr("x", d => d.x)
+        .attr("width", d => d.width)
+        .attr("y", d => d.y)
+        .attr("height", d => d.height)
+        .attr("fill", "#808080")
+        .attr("opacity", "0.75");
+    
+      g.selectAll("circle")
+        .data(splot_data, d => d.Major)
+        .transition()
+        .duration(T_DURATION)
+        // .ease(d3.easeLinear)
         .attr("cx", d => splot_x(d.Median))
         .attr("cy", d => splot_women_y(d.ShareWomen))
         .attr("r", r)
-        .style("fill", d => splot_color(d.Major_category));
-  };*/
-
+        .style("fill", d => splot_color(d.Major_category));    
+      }
+  }
+  
   splot = splotSvg.node();
 };
+
+
+function configureCircleInteractions(){
+  splot_circles = d3.select("#circles").selectAll("circle");
+
+  // Highlighting
+  splot_circles.on("mouseover.highlight", function(d) { 
+    d3.select(this)
+      .raise() // bring to front
+      .style("stroke", "red")
+      .style("stroke-width", 2);
+    // d3.select(status).text("highlight: " + d.major);
+  });
+
+  splot_circles.on("mouseout.highlight", function(d) {
+    d3.select(this).style("stroke", null);
+    // d3.select(status).text("highlight: none");
+  });
+
+  // Hovering
+  splot_circles.on("mouseover.hover", function(d) {
+      
+    let me = d3.select(this);
+    let div = d3.select("body").append("div");
+    
+    div.attr("id", "details");
+    div.attr("class", "tooltip");
+    
+    let keys = Object.keys(d);
+    keys.shift();
+    let rows = div.append("table")
+      .selectAll("tr")
+      .data(keys)
+      .enter()
+      .append("tr");
+    
+    rows.append("th").text(key => key);
+    rows.append("td").text(key => d[key]);
+    
+    // d3.select(status).text("hover: " + d.major);
+  });
+
+  splot_circles.on("mousemove.hover", function(d) {
+      
+    let div = d3.select("div#details");
+    let bbox = div.node().getBoundingClientRect(); // Get Height of Tooltip
+    
+    div.style("left", d3.event.clientX + "px")
+    div.style("top",  (d3.event.clientY - bbox.height) + "px");
+  });
+  
+  splot_circles.on("mouseout.hover", function(d) {
+    d3.selectAll("div#details").remove();
+    // d3.select(status).text("hover: none");
+  });  
+
+
+
+  // Brushing 1
+  splot_circles.on("mouseover.brush1", function(d) {
+    splot_circles.filter(e => (d.Major_category !== e.Major_category)).transition().style("fill", "#bbbbbb");
+    // d3.select(status).text("brush: " + d.Major_category);
+  });
+  
+  splot_circles.on("mouseout.brush1", function(d) {
+    splot_circles.transition().style("fill", d => splot_color(d.Major_category));
+    // d3.select(status).text("brush: none");
+  });
+
+  // Brushing 2
+  let brush = d3.brush()
+    .on("start.brush2 brush.brush2 end.brush2", brushed);
+  
+  function brushed() {
+    
+    if (d3.event.selection) {
+      
+      // d3.select(status).text("brush: " + d3.event.selection);
+      const [[x0, y0], [x1, y1]] = d3.event.selection;      
+      
+      splot_circles.classed("dim", function(d) {
+        let cx = +d3.select(this).attr("cx");
+        let cy = +d3.select(this).attr("cy");
+        return !(x0 <= cx && cx < x1 && y0 <= cy && cy < y1);
+      });
+    }
+    
+    else {
+      // d3.select(status).text("brush: none");
+      splot_circles.classed("dim", false);
+    }
+  }
+  
+  // place brush BEHIND points so we still get pointer events
+  splotSvg.insert("g", ":first-child").attr("class", "brush").call(brush);
+
+}
+
 
 function setupSplotAxes(){
 
