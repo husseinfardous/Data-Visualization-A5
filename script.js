@@ -445,18 +445,19 @@ function setupScatterPlot(){
       .attr("class", "legend")
       .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
   
-  // splotLegend.append("rect")
-  //   .attr("x", SPLOT_WIDTH - 18)
-  //   .attr("width", 18)
-  //   .attr("height", 18)
-  //   .style("fill", splot_color);
+   splotLegend.append("rect")
+     .attr("x", SPLOT_WIDTH - 18)
+     .attr("width", 18)
+     .attr("height", 18)
+     .style("fill", splot_color);
 
-  // splotLegend.append("text")
-  //   .attr("x", SPLOT_WIDTH - 24)
-  //   .attr("y", 9)
-  //   .attr("dy", ".35em")
-  //   .style("text-anchor", "end")
-  //   .text(function(d) { return d; });
+   splotLegend.append("text")
+     .attr("x", SPLOT_WIDTH - 24)
+     .attr("y", 9)
+     .attr("dy", ".35em")
+     .style("text-anchor", "end")
+     .style("font-size", "13px")
+     .text(function(d) { return d; });
   
   splotSvg.node().update = () => {
 
