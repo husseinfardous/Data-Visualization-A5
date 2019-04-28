@@ -20,7 +20,7 @@ var splot_xAxis, splot_unemp_yAxis, splot_women_yAxis;
 var splot_unemp_rects, splot_women_rects;
 var splot_circles;
 var splot_data, major_categs, medians, unemp_rates, share_women;
-var major_categs_colors = ["#800000", "#9A6324", "#808000", "#469990", "#000075", "#000000", "#e6194B", "#f58231", "#a9a9a9", "#bfef45", "#3cb44b", "#42d4f4", "#4363d8", "#911eb4", "#f032e6", "#ffe119"];
+var major_categs_colors = ["#800000", "#9A6324", "#808000", "#469990", "#000075", "#000000", "#e6194B", "#f58231", "#aaffc3", "#bfef45", "#3cb44b", "#42d4f4", "#4363d8", "#911eb4", "#f032e6", "#ffe119"];
 var splot;
 
 var r = 15;
