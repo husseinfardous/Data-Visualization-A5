@@ -379,8 +379,7 @@ function setupAxes() {
 /****** Scatter Plot ******/
 function createSplotChart(data) {
   splot_data = data;
-  console.log(data);
-  console.log(splot_data);
+
   // Secondary data filtering
   major_categs = d3.set(splot_data, d => d.Major_category);
   medians = splot_data.map((value, index) => value.Median);
@@ -476,7 +475,6 @@ function setupScatterPlot(){
       
       g.selectAll("circle")
         .data(splot_data, d => d.Major)
-        // .data(splot_data)
         .transition()
         .duration(T_DURATION)
         // .ease(d3.easeLinear)
@@ -500,7 +498,6 @@ function setupScatterPlot(){
     
       g.selectAll("circle")
         .data(splot_data, d => d.Major)
-        // .data(splot_data)
         .transition()
         .duration(T_DURATION)
         // .ease(d3.easeLinear)
@@ -510,29 +507,7 @@ function setupScatterPlot(){
         .style("fill", d => splot_color(d.Major_category));    
       }
   }
-
-  /*svg.node().update = () => {
-    
-    g.selectAll("rect")
-      .data(splot_women_rects)
-        .attr("x", d => d.x)
-        .attr("width", d => d.width)
-        .attr("y", d => d.y)
-        .attr("height", d => d.height)
-        .attr("fill", "#808080")
-        .attr("opacity", "0.75");
   
-    g.selectAll("circle")
-      .data(splot_data)
-      .transition()
-      .duration(800)
-      .ease(d3.easeLinear)
-        .attr("cx", d => splot_x(d.Median))
-        .attr("cy", d => splot_women_y(d.ShareWomen))
-        .attr("r", r)
-        .style("fill", d => splot_color(d.Major_category));
-  };*/
-
   splot = splotSvg.node();
 };
 
