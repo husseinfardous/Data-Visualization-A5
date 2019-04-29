@@ -416,7 +416,7 @@ function computeSplotQuantiles(){
 }
 
 function setupScatterPlot(){
-  splotSvg.style("border", "1px solid #bbbbbb");
+//  splotSvg.style("border", "1px solid #bbbbbb");
   
   const g = splotSvg.append("g").attr("id", "circles");
   
@@ -657,7 +657,7 @@ function setupSplotAxes(){
 //    .text(splot_data.Median)
   );
 
-  splot_unemp_yAxis = g => g.attr("transform", `translate(${splot_margin.left}, 0)`)
+  splot_unemp_yAxis = g => g.attr("transform", `translate(${splot_margin.left - 5}, 0)`)
     .call(d3.axisLeft(splot_unemp_y))
     .call(g => g.select(".domain").remove())
     .call(g => g.select(".tick:last-of-type text").clone()
@@ -667,7 +667,7 @@ function setupSplotAxes(){
     .text(splot_data.Unemployment_rate)
   );
 
-  splot_women_yAxis = g => g.attr("transform", `translate(${splot_margin.left}, 0)`)
+  splot_women_yAxis = g => g.attr("transform", `translate(${splot_margin.left - 5}, 0)`)
   .call(d3.axisLeft(splot_women_y))
   .call(g => g.select(".domain").remove())
   .call(g => g.select(".tick:last-of-type text").clone()
@@ -676,6 +676,7 @@ function setupSplotAxes(){
     .attr("font-weight", "bold")
     .text(splot_data.ShareWomen)
   );
+    ;
 
 
   splotSvg.append("g").call(splot_xAxis);
