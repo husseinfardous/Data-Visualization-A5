@@ -145,6 +145,7 @@ function handleStepEnter(response) {
 
       splot.update();
       configureCircleInteractions();
+      configureLegendInteractions();
     }
   else{
     splotSvg.transition()
@@ -456,6 +457,7 @@ function setupScatterPlot(){
      .style("text-anchor", "end")
      .style("font-size", "13px")
      .text(function(d) { return d; });
+   
   
   splotSvg.node().update = () => {
     
@@ -536,8 +538,33 @@ function setupScatterPlot(){
   splot = splotSvg.node();
 };
 
-
+function configureLegendInteractions(){
+    splot_legend = d3.selectAll("g.legend");
+    splot_circles = d3.select("#circles").selectAll("circle");
+    
+    splot_legend.on("mouseover.highlight", function(d) {
+        d3.select(this)
+          .raise()
+          .style("stroke", "red")
+          .style("stroke-width", 1);
+    })
+    
+    splot_legend.on("mouseout.highlight", function(d) {
+        d3.select(this).style("stroke", null);
+    })
+    
+    splot_legend.on("mouseover.brush1", function(d) {
+        splot_circles.filter(e => (d !== e.Major_category)).transition().style("fill", "#bbbbbb");
+        splot_circles.filter(e => (d === e.Major_category)).raise();
+    });
+  
+    splot_legend.on("mouseout.brush1", function(d) {
+        splot_circles.transition().style("fill", d => splot_color(d.Major_category));
+        // d3.select(status).text("brush: none");
+    });
+}
 function configureCircleInteractions(){
+  splot_legend = d3.selectAll("g.legend");
   splot_circles = d3.select("#circles").selectAll("circle");
 
   // Highlighting
@@ -597,11 +624,16 @@ function configureCircleInteractions(){
   // Brushing 1
   splot_circles.on("mouseover.brush1", function(d) {
     splot_circles.filter(e => (d.Major_category !== e.Major_category)).transition().style("fill", "#bbbbbb");
+    splot_legend.filter(e => d.Major_category === e)// bring to front
+                .style("stroke", "red")
+                .style("stroke-width", 1);
     // d3.select(status).text("brush: " + d.Major_category);
   });
   
   splot_circles.on("mouseout.brush1", function(d) {
     splot_circles.transition().style("fill", d => splot_color(d.Major_category));
+    splot_legend.filter(e => d.Major_category === e)// bring to front
+                .style("stroke", null);
     // d3.select(status).text("brush: none");
   });
 
