@@ -125,7 +125,6 @@ function handleResize() {
 // scrollama event handlers
 function handleStepEnter(response) {
   // response = { element, direction, index }
-  console.log(response);
   CURRENT_STEP = d3.select(response.element).attr('data-step');
   console.log(CURRENT_STEP);
 
@@ -212,7 +211,6 @@ function setupBarGraph() {
       .selectAll("rect")
       .data(aggData, d => d.Major_category)
       .join("rect")
-      .style("mix-blend-mode", "multiply")
       .attr("x", -xBar.bandwidth())
       .attr("y", 0)
       .attr("transform", d => rotate(xBar(d.Major_category), yBar(0), 180))
@@ -224,7 +222,6 @@ function setupBarGraph() {
       .selectAll("rect")
       .data(aggData, d => d.Major_category)
       .join("rect")
-      .style("mix-blend-mode", "multiply")
       .attr("x", -xBar.bandwidth())
       .attr("y", 0)
       .attr("transform", d => rotate(xBar(d.Major_category), yBar(0), 180))
@@ -379,8 +376,7 @@ function setupAxes() {
 /****** Scatter Plot ******/
 function createSplotChart(data) {
   splot_data = data;
-  console.log(data);
-  console.log(splot_data);
+
   // Secondary data filtering
   major_categs = d3.set(splot_data, d => d.Major_category);
   medians = splot_data.map((value, index) => value.Median);
@@ -581,9 +577,10 @@ function configureCircleInteractions(){
       
     let div = d3.select("div#details");
     let bbox = div.node().getBoundingClientRect(); // Get Height of Tooltip
-    
-    div.style("left", d3.event.clientX + "px")
+
+    div.style("left", d3.event.clientX + "px");
     div.style("top",  (d3.event.clientY - bbox.height) + "px");
+    div.style("z-index", "100");
   });
   
   splot_circles.on("mouseout.hover", function(d) {
