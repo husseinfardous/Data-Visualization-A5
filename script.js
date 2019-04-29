@@ -431,21 +431,11 @@ function setupScatterPlot(){
     .data(splot_unemp_rects)
     .enter()
     .append("rect")
-  //   .attr("x", d => d.x)
-  //   .attr("width", d => d.width)
-  //   .attr("y", d => d.y)
-  //   .attr("height", d => d.height)
-  //   .attr("fill", "#808080")
-  //   .attr("opacity", "0.75");
   
   g.selectAll("circle")
     .data(splot_data, d => d.Major)
     .enter()
     .append("circle")
-  //   .attr("cx", d => splot_x(d.Median))
-  //   .attr("cy", d => splot_unemp_y(d.Unemployment_rate))
-  //   .attr("r", r)
-  //   .style("fill", d => splot_color(d.Major_category));
 
 
   splotSvg.append("g").attr("id", "annotation");
@@ -471,19 +461,40 @@ function setupScatterPlot(){
      .text(function(d) { return d; });
   
   splotSvg.node().update = () => {
+    
+    if(CURRENT_STEP === 'splot0'){
+      g.selectAll("rect")
+//        .data(splot_unemp_rects)
+        .transition()
+        .duration(T_DURATION)
+        .style("opacity", 0.0);
+      
+      g.selectAll("circle")
+        .data(splot_data, d => d.Major)
+        .transition()
+        .duration(T_DURATION)
+        // .ease(d3.easeLinear)
+        .attr("cx", d => splot_x(d.Median))
+        .attr("cy", d => splot_unemp_y(d.Unemployment_rate))
+        .attr("r", r)
+        .style("fill", d => splot_color(d.Major_category));
+      
+      g.call(splot_unemp_yAxis);
 
+    }
     if(CURRENT_STEP === 'splot1'){
       g.selectAll("rect")
         .data(splot_unemp_rects)
         .transition()
         .duration(T_DURATION)
         // .ease(d3.easeLinear)
+        .attr("display", "true")
         .attr("x", d => d.x)
         .attr("width", d => d.width)
         .attr("y", d => d.y)
         .attr("height", d => d.height)
         .attr("fill", "#808080")
-        .attr("opacity", "0.75");
+        .style("opacity", "0.75");
       
       g.selectAll("circle")
         .data(splot_data, d => d.Major)
