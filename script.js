@@ -145,6 +145,7 @@ function handleStepEnter(response) {
 
       splot.update();
       configureCircleInteractions();
+      configureLegendInteractions();
     }
   else{
     splotSvg.transition()
@@ -370,7 +371,7 @@ function setupAxes() {
       .style("text-anchor", "end")
       .attr("dx", "-.8em")
       .attr("dy", ".15em")
-      .attr("transform", "rotate(-30)");
+      .attr("transform", "rotate(-20)");
 
   gy = svg.append("g")
       .attr("class", "y-axes")
@@ -428,21 +429,11 @@ function setupScatterPlot(){
     .data(splot_unemp_rects)
     .enter()
     .append("rect")
-  //   .attr("x", d => d.x)
-  //   .attr("width", d => d.width)
-  //   .attr("y", d => d.y)
-  //   .attr("height", d => d.height)
-  //   .attr("fill", "#808080")
-  //   .attr("opacity", "0.75");
   
   g.selectAll("circle")
     .data(splot_data, d => d.Major)
     .enter()
     .append("circle")
-  //   .attr("cx", d => splot_x(d.Median))
-  //   .attr("cy", d => splot_unemp_y(d.Unemployment_rate))
-  //   .attr("r", r)
-  //   .style("fill", d => splot_color(d.Major_category));
 
 
   splotSvg.append("g").attr("id", "annotation");
@@ -466,21 +457,16 @@ function setupScatterPlot(){
      .style("text-anchor", "end")
      .style("font-size", "13px")
      .text(function(d) { return d; });
+   
   
   splotSvg.node().update = () => {
-
-    if(CURRENT_STEP === 'splot1'){
+    
+    if(CURRENT_STEP === 'splot0'){
       g.selectAll("rect")
-        .data(splot_unemp_rects)
+//        .data(splot_unemp_rects)
         .transition()
         .duration(T_DURATION)
-        // .ease(d3.easeLinear)
-        .attr("x", d => d.x)
-        .attr("width", d => d.width)
-        .attr("y", d => d.y)
-        .attr("height", d => d.height)
-        .attr("fill", "#808080")
-        .attr("opacity", "0.75");
+        .style("opacity", 0.0);
       
       g.selectAll("circle")
         .data(splot_data, d => d.Major)
@@ -494,6 +480,99 @@ function setupScatterPlot(){
       
       g.call(splot_unemp_yAxis);
 
+    }
+    if(CURRENT_STEP === 'splot1'){
+      g.selectAll("rect")
+        .data(splot_unemp_rects)
+        .transition()
+        .duration(T_DURATION)
+        // .ease(d3.easeLinear)
+        .attr("display", "true")
+        .attr("x", d => d.x)
+        .attr("width", d => d.width)
+        .attr("y", d => d.y)
+        .attr("height", d => d.height)
+        .attr("fill", "#808080")
+        .style("opacity", "0.75");
+      
+      g.selectAll("circle")
+        .data(splot_data, d => d.Major)
+        .transition()
+        .duration(T_DURATION)
+        // .ease(d3.easeLinear)
+        .attr("cx", d => splot_x(d.Median))
+        .attr("cy", d => splot_unemp_y(d.Unemployment_rate))
+        .attr("r", r)
+        .style("fill", d => splot_color(d.Major_category));
+      
+      g.call(splot_unemp_yAxis);
+      
+    }
+    else if(CURRENT_STEP === 'splot1.1'){
+      g.selectAll("rect")
+        .data(splot_unemp_rects)
+        .transition()
+        .duration(T_DURATION)
+        // .ease(d3.easeLinear)
+        .attr("display", "true")
+        .attr("x", d => d.x)
+        .attr("width", d => d.width)
+        .attr("y", d => d.y)
+        .attr("height", d => d.height)
+        .attr("fill", "#808080")
+        .style("opacity", "0.75");
+      g.selectAll("circle")
+        .filter(d => (d.Median >= d3.quantile(medians, 0.70)) || (d.Unemployment_rate < d3.quantile(unemp_rates, 0.75)))
+        .transition()
+        .duration(T_DURATION/2)
+         .ease(d3.easeLinear)
+        .attr("cx", d => splot_x(d.Median))
+        .attr("cy", d => splot_unemp_y(d.Unemployment_rate))
+        .attr("r", 0)
+        .style("fill", "grey");
+    g.selectAll("circle")
+        .filter(d => (d.Median < d3.quantile(medians, 0.70)) && (d.Unemployment_rate > d3.quantile(unemp_rates, 0.75)))
+        .transition()
+        .duration(T_DURATION/2)
+        .ease(d3.easeLinear)
+        .attr("cx", d => splot_x(d.Median))
+        .attr("cy", d => splot_unemp_y(d.Unemployment_rate))
+        .attr("r", r)
+        .style("fill", d => splot_color(d.Major_category));
+      g.call(splot_unemp_yAxis);
+    }
+    else if(CURRENT_STEP === 'splot1.2'){
+      g.selectAll("rect")
+        .data(splot_unemp_rects)
+        .transition()
+        .duration(T_DURATION)
+        // .ease(d3.easeLinear)
+        .attr("display", "true")
+        .attr("x", d => d.x)
+        .attr("width", d => d.width)
+        .attr("y", d => d.y)
+        .attr("height", d => d.height)
+        .attr("fill", "#808080")
+        .style("opacity", "0.75");
+      g.selectAll("circle")
+        .filter(d => (d.Median <= d3.quantile(medians, 0.3)) || (d.Unemployment_rate >= d3.quantile(unemp_rates, 0.25)))
+        .transition()
+        .duration(T_DURATION/2)
+        .ease(d3.easeLinear)
+        .attr("cx", d => splot_x(d.Median))
+        .attr("cy", d => splot_unemp_y(d.Unemployment_rate))
+        .attr("r", 0)
+        .style("fill", "grey");
+      g.selectAll("circle")
+        .filter(d => (d.Median > d3.quantile(medians, 0.3)) && (d.Unemployment_rate < d3.quantile(unemp_rates, 0.25)))
+        .transition()
+        .duration(T_DURATION/2)
+        .ease(d3.easeLinear)
+        .attr("cx", d => splot_x(d.Median))
+        .attr("cy", d => splot_unemp_y(d.Unemployment_rate))
+        .attr("r", r)
+        .style("fill", d => splot_color(d.Major_category));
+      g.call(splot_unemp_yAxis);
     }
     else if(CURRENT_STEP === 'splot2'){
       g.selectAll("rect")
@@ -525,8 +604,33 @@ function setupScatterPlot(){
   splot = splotSvg.node();
 };
 
-
+function configureLegendInteractions(){
+    splot_legend = d3.selectAll("g.legend");
+    splot_circles = d3.select("#circles").selectAll("circle");
+    
+    splot_legend.on("mouseover.highlight", function(d) {
+        d3.select(this)
+          .raise()
+          .style("stroke", "red")
+          .style("stroke-width", 1);
+    })
+    
+    splot_legend.on("mouseout.highlight", function(d) {
+        d3.select(this).style("stroke", null);
+    })
+    
+    splot_legend.on("mouseover.brush1", function(d) {
+        splot_circles.filter(e => (d !== e.Major_category)).transition().style("fill", "#bbbbbb");
+        splot_circles.filter(e => (d === e.Major_category)).raise();
+    });
+  
+    splot_legend.on("mouseout.brush1", function(d) {
+        splot_circles.transition().style("fill", d => splot_color(d.Major_category));
+        // d3.select(status).text("brush: none");
+    });
+}
 function configureCircleInteractions(){
+  splot_legend = d3.selectAll("g.legend");
   splot_circles = d3.select("#circles").selectAll("circle");
 
   // Highlighting
@@ -586,11 +690,16 @@ function configureCircleInteractions(){
   // Brushing 1
   splot_circles.on("mouseover.brush1", function(d) {
     splot_circles.filter(e => (d.Major_category !== e.Major_category)).transition().style("fill", "#bbbbbb");
+    splot_legend.filter(e => d.Major_category === e)// bring to front
+                .style("stroke", "red")
+                .style("stroke-width", 1);
     // d3.select(status).text("brush: " + d.Major_category);
   });
   
   splot_circles.on("mouseout.brush1", function(d) {
     splot_circles.transition().style("fill", d => splot_color(d.Major_category));
+    splot_legend.filter(e => d.Major_category === e)// bring to front
+                .style("stroke", null);
     // d3.select(status).text("brush: none");
   });
 
