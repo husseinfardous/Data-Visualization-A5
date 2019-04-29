@@ -506,7 +506,73 @@ function setupScatterPlot(){
         .style("fill", d => splot_color(d.Major_category));
       
       g.call(splot_unemp_yAxis);
-
+      
+    }
+    else if(CURRENT_STEP === 'splot1.1'){
+      g.selectAll("rect")
+        .data(splot_unemp_rects)
+        .transition()
+        .duration(T_DURATION)
+        // .ease(d3.easeLinear)
+        .attr("display", "true")
+        .attr("x", d => d.x)
+        .attr("width", d => d.width)
+        .attr("y", d => d.y)
+        .attr("height", d => d.height)
+        .attr("fill", "#808080")
+        .style("opacity", "0.75");
+      g.selectAll("circle")
+        .filter(d => (d.Median >= d3.quantile(medians, 0.70)) || (d.Unemployment_rate < d3.quantile(unemp_rates, 0.75)))
+        .transition()
+        .duration(T_DURATION/2)
+         .ease(d3.easeLinear)
+        .attr("cx", d => splot_x(d.Median))
+        .attr("cy", d => splot_unemp_y(d.Unemployment_rate))
+        .attr("r", 0)
+        .style("fill", "grey");
+    g.selectAll("circle")
+        .filter(d => (d.Median < d3.quantile(medians, 0.70)) && (d.Unemployment_rate > d3.quantile(unemp_rates, 0.75)))
+        .transition()
+        .duration(T_DURATION/2)
+        .ease(d3.easeLinear)
+        .attr("cx", d => splot_x(d.Median))
+        .attr("cy", d => splot_unemp_y(d.Unemployment_rate))
+        .attr("r", r)
+        .style("fill", d => splot_color(d.Major_category));
+      g.call(splot_unemp_yAxis);
+    }
+    else if(CURRENT_STEP === 'splot1.2'){
+      g.selectAll("rect")
+        .data(splot_unemp_rects)
+        .transition()
+        .duration(T_DURATION)
+        // .ease(d3.easeLinear)
+        .attr("display", "true")
+        .attr("x", d => d.x)
+        .attr("width", d => d.width)
+        .attr("y", d => d.y)
+        .attr("height", d => d.height)
+        .attr("fill", "#808080")
+        .style("opacity", "0.75");
+      g.selectAll("circle")
+        .filter(d => (d.Median <= d3.quantile(medians, 0.3)) || (d.Unemployment_rate >= d3.quantile(unemp_rates, 0.25)))
+        .transition()
+        .duration(T_DURATION/2)
+        .ease(d3.easeLinear)
+        .attr("cx", d => splot_x(d.Median))
+        .attr("cy", d => splot_unemp_y(d.Unemployment_rate))
+        .attr("r", 0)
+        .style("fill", "grey");
+      g.selectAll("circle")
+        .filter(d => (d.Median > d3.quantile(medians, 0.3)) && (d.Unemployment_rate < d3.quantile(unemp_rates, 0.25)))
+        .transition()
+        .duration(T_DURATION/2)
+        .ease(d3.easeLinear)
+        .attr("cx", d => splot_x(d.Median))
+        .attr("cy", d => splot_unemp_y(d.Unemployment_rate))
+        .attr("r", r)
+        .style("fill", d => splot_color(d.Major_category));
+      g.call(splot_unemp_yAxis);
     }
     else if(CURRENT_STEP === 'splot2'){
       g.selectAll("rect")
