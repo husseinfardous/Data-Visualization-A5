@@ -370,7 +370,7 @@ function setupAxes() {
       .style("text-anchor", "end")
       .attr("dx", "-.8em")
       .attr("dy", ".15em")
-      .attr("transform", "rotate(-30)");
+      .attr("transform", "rotate(-20)");
 
   gy = svg.append("g")
       .attr("class", "y-axes")
