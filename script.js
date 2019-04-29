@@ -73,8 +73,8 @@ d3.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/college-ma
     return {
       Major: data.Major,
       Major_category: data.Major_category,
-      ShareWomen: parseFloat(data.ShareWomen),
-      Unemployment_rate: parseFloat(data.Unemployment_rate),
+      ShareWomen: parseFloat(data.ShareWomen) * 100,
+      Unemployment_rate: parseFloat(data.Unemployment_rate) * 100,
       Median: parseInt(data.Median),
       College_jobs: parseInt(data.College_jobs),
       Non_college_jobs: parseInt(data.Non_college_jobs),
@@ -203,6 +203,11 @@ function setupBarGraph() {
   
   const LEGEND_X = 800;
   const LEGEND_SIZE = 10;
+
+  const titles = {  "Median" : "Median Yearly Income",
+                    "Total" : "# of Students",
+                    "women" : "# of Students",
+                    "Percent_college_jobs" : "% of Graduates in Jobs Requiring College Degree"}
     
   xBar.domain(aggData.map(d => d.Major_category));
   
@@ -260,7 +265,7 @@ function setupBarGraph() {
       svg.transition()
       .duration(T_DURATION)
       .attr('display', 'none');
-      return;
+        return;
     }
     else{
       svg.attr('display', 'true')
@@ -317,10 +322,17 @@ function setupBarGraph() {
         .style("opacity", 0);
     }
 
-    yAxisBar = g => g
-      .attr("transform", `translate(${marginBar.left},0)`)
-      .call(d3.axisLeft(yBar))
-      .call(g => g.select(".domain").remove());
+    if (CURRENT_STEP === "Percent_college_jobs") {
+        yAxisBar = g => g
+            .attr("transform", `translate(${marginBar.left},0)`)
+            .call(d3.axisLeft(yBar).tickFormat(d => d + "%"))
+            .call(g => g.select(".domain").remove())
+    } else {
+        yAxisBar = g => g
+            .attr("transform", `translate(${marginBar.left},0)`)
+            .call(d3.axisLeft(yBar))
+            .call(g => g.select(".domain").remove())
+    }
 
     // Animate y-axis on rescale between different graphs
     svg.select(".y-axes")
@@ -329,7 +341,7 @@ function setupBarGraph() {
 
     svg.select(".y-label")
       .transition()
-      .text(CURRENT_STEP);
+      .text(titles[CURRENT_STEP]);
     
   };
 
@@ -351,9 +363,9 @@ function setupAxes() {
     .call(d3.axisBottom(xBar).tickSizeOuter(0))
 
   yAxisBar = g => g
-    .attr("transform", `translate(${marginBar.left},0)`)
-    .call(d3.axisLeft(yBar))
-    .call(g => g.select(".domain").remove())
+      .attr("transform", `translate(${marginBar.left},0)`)
+      .call(d3.axisLeft(yBar))
+      .call(g => g.select(".domain").remove());
 
   gx = svg.append("g")
       .call(xAxisBar)
@@ -361,7 +373,7 @@ function setupAxes() {
       .style("text-anchor", "end")
       .attr("dx", "-.8em")
       .attr("dy", ".15em")
-      .attr("transform", "rotate(-60)");
+      .attr("transform", "rotate(-30)");
 
   gy = svg.append("g")
       .attr("class", "y-axes")
@@ -411,7 +423,7 @@ function computeSplotQuantiles(){
 }
 
 function setupScatterPlot(){
-  splotSvg.style("border", "1px solid #bbbbbb");
+//  splotSvg.style("border", "1px solid #bbbbbb");
   
   const g = splotSvg.append("g").attr("id", "circles");
   
@@ -482,6 +494,8 @@ function setupScatterPlot(){
         .attr("cy", d => splot_unemp_y(d.Unemployment_rate))
         .attr("r", r)
         .style("fill", d => splot_color(d.Major_category));
+      
+      g.call(splot_unemp_yAxis);
 
     }
     else if(CURRENT_STEP === 'splot2'){
@@ -504,7 +518,10 @@ function setupScatterPlot(){
         .attr("cx", d => splot_x(d.Median))
         .attr("cy", d => splot_women_y(d.ShareWomen))
         .attr("r", r)
-        .style("fill", d => splot_color(d.Major_category));    
+        .style("fill", d => splot_color(d.Major_category));  
+        
+        
+      g.call(splot_women_yAxis);
       }
   }
   
@@ -637,32 +654,33 @@ function setupSplotAxes(){
     .attr("fill", "#000")
     .attr("font-weight", "bold")
     .attr("text-anchor", "end")
-    .text(splot_data.Median)
+    .text("Median Income ($)")
   );
 
-  splot_unemp_yAxis = g => g.attr("transform", `translate(${splot_margin.left}, 0)`)
-    .call(d3.axisLeft(splot_unemp_y))
+  splot_unemp_yAxis = g => g.attr("transform", `translate(${splot_margin.left - 2}, 0)`)
+    .call(d3.axisLeft(splot_unemp_y).tickFormat(d => d + "%"))
     .call(g => g.select(".domain").remove())
     .call(g => g.select(".tick:last-of-type text").clone()
     .attr("x", 4)
     .attr("text-anchor", "start")
     .attr("font-weight", "bold")
-    .text(splot_data.Unemployment_rate)
+    .text("Unemployment Rate (%)")
   );
 
-  splot_women_yAxis = g => g.attr("transform", `translate(${splot_margin.left}, 0)`)
-  .call(d3.axisLeft(splot_women_y))
+  splot_women_yAxis = g => g.attr("transform", `translate(${splot_margin.left - 2}, 0)`)
+  .call(d3.axisLeft(splot_women_y).tickFormat(d => d + "%"))
   .call(g => g.select(".domain").remove())
   .call(g => g.select(".tick:last-of-type text").clone()
     .attr("x", 4)
     .attr("text-anchor", "start")
     .attr("font-weight", "bold")
-    .text(splot_data.ShareWomen)
+    .text("Share of Women (%)")
   );
+    ;
 
 
   splotSvg.append("g").call(splot_xAxis);
-  splotSvg.append("g").call(splot_unemp_yAxis);
+  
 }
 
 
