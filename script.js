@@ -322,10 +322,17 @@ function setupBarGraph() {
         .style("opacity", 0);
     }
 
-    yAxisBar = g => g
-      .attr("transform", `translate(${marginBar.left},0)`)
-      .call(d3.axisLeft(yBar))
-      .call(g => g.select(".domain").remove());
+    if (CURRENT_STEP === "Percent_college_jobs") {
+        yAxisBar = g => g
+            .attr("transform", `translate(${marginBar.left},0)`)
+            .call(d3.axisLeft(yBar).tickFormat(d => d + "%"))
+            .call(g => g.select(".domain").remove())
+    } else {
+        yAxisBar = g => g
+            .attr("transform", `translate(${marginBar.left},0)`)
+            .call(d3.axisLeft(yBar))
+            .call(g => g.select(".domain").remove())
+    }
 
     // Animate y-axis on rescale between different graphs
     svg.select(".y-axes")
@@ -356,9 +363,9 @@ function setupAxes() {
     .call(d3.axisBottom(xBar).tickSizeOuter(0))
 
   yAxisBar = g => g
-    .attr("transform", `translate(${marginBar.left},0)`)
-    .call(d3.axisLeft(yBar))
-    .call(g => g.select(".domain").remove())
+      .attr("transform", `translate(${marginBar.left},0)`)
+      .call(d3.axisLeft(yBar))
+      .call(g => g.select(".domain").remove());
 
   gx = svg.append("g")
       .call(xAxisBar)
