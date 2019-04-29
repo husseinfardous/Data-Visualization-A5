@@ -20,7 +20,7 @@ var splot_xAxis, splot_unemp_yAxis, splot_women_yAxis;
 var splot_unemp_rects, splot_women_rects;
 var splot_circles;
 var splot_data, major_categs, medians, unemp_rates, share_women;
-var major_categs_colors = ["#800000", "#9A6324", "#808000", "#469990", "#000075", "#000000", "#e6194B", "#f58231", "#a9a9a9", "#bfef45", "#3cb44b", "#42d4f4", "#4363d8", "#911eb4", "#f032e6", "#ffe119"];
+var major_categs_colors = ["#800000", "#9A6324", "#808000", "#469990", "#000075", "#000000", "#e6194B", "#f58231", "#aaffc3", "#bfef45", "#3cb44b", "#42d4f4", "#4363d8", "#911eb4", "#f032e6", "#ffe119"];
 var splot;
 
 var r = 15;
@@ -125,7 +125,6 @@ function handleResize() {
 // scrollama event handlers
 function handleStepEnter(response) {
   // response = { element, direction, index }
-  console.log(response);
   CURRENT_STEP = d3.select(response.element).attr('data-step');
   console.log(CURRENT_STEP);
 
@@ -217,7 +216,6 @@ function setupBarGraph() {
       .selectAll("rect")
       .data(aggData, d => d.Major_category)
       .join("rect")
-      .style("mix-blend-mode", "multiply")
       .attr("x", -xBar.bandwidth())
       .attr("y", 0)
       .attr("transform", d => rotate(xBar(d.Major_category), yBar(0), 180))
@@ -229,7 +227,6 @@ function setupBarGraph() {
       .selectAll("rect")
       .data(aggData, d => d.Major_category)
       .join("rect")
-      .style("mix-blend-mode", "multiply")
       .attr("x", -xBar.bandwidth())
       .attr("y", 0)
       .attr("transform", d => rotate(xBar(d.Major_category), yBar(0), 180))
@@ -584,9 +581,10 @@ function configureCircleInteractions(){
       
     let div = d3.select("div#details");
     let bbox = div.node().getBoundingClientRect(); // Get Height of Tooltip
-    
-    div.style("left", d3.event.clientX + "px")
+
+    div.style("left", d3.event.clientX + "px");
     div.style("top",  (d3.event.clientY - bbox.height) + "px");
+    div.style("z-index", "100");
   });
   
   splot_circles.on("mouseout.hover", function(d) {
