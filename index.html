@@ -86,6 +86,14 @@
           -ms-transform: translateY(-50%);
           transform: translateY(-50%);
       }
+    .vertical-center-tip {
+          margin: 0;
+        font-size:0.8vw;
+          position: relative;
+          top: 50%;
+          -ms-transform: translateY(-50%);
+          transform: translateY(-50%);
+      }
     
       circle {
         stroke: white;
@@ -118,9 +126,13 @@
 <body>
   <main>
     <section id='intro' class='whole-page'>
-      <h1 class='intro__hed'>Economic Guide to College Majors</h1>
-      <p class='intro__dek'>
-        Start scrolling to explore.
+      <h1 class='intro__hed'>Does College Provide All Students with the Same Economic Opportunities?
+</h1>
+      <p class='intro__bot'>
+In the United States, we tend to believe that a college education provides a person with better economic opportunities. But do all students receive the same boost?
+      </p>
+      <p class='intro__bot'>
+Start scrolling to explore.
       </p>
     </section>
     <section id='scrolly'>
@@ -148,9 +160,30 @@
                  Further, we see that some types of majors provide access to more exclusive careers than others. For example, only 30% of Business majors end up in jobs requiring a four-year degree, compared to 70% of Education majors.
             </article>
         </div>
-        <div class='step' data-step='splot1'>
+        <div class='step' data-step='splot0'>
           <p>Economic Outcomes for All Majors</p>
-             <article class=vertical-center> Here, we explore the median income for each major compared with that major’s average unemployment rate. We get a sense of which major have good economic outcomes and which do not.
+             <article class=vertical-center> Here, we explore the median income for each major compared with that major’s average unemployment rate. We get a sense of which majors have good economic outcomes and which do not.
+            </article>
+            <article class=vertical-center-tip>
+            TIP: Having trouble finding your major? Hover over its category in the legend on the right to bring all majors of that category to the front.
+            </article>
+        </div>
+        <div class='step' data-step='splot1'>
+          <p>Typical Outcomes & the Outliers</p>
+             <article class=vertical-center> We highlight the middle 50% of outcomes in both dimensions. You can think of majors in these grey areas as those with outcomes not too much better or worse than too many other people.
+            </article>
+            <article class=vertical-center>
+            Scrolling on, we take a closer look at the majors at the extremes of expected outcomes.
+            </article>
+        </div>
+        <div class='step' data-step='splot1.1'>
+          <p>Majors with Troubling Outcomes</p>
+             <article class=vertical-center> Here are the majors with low incomes and high unemployment. No STEM majors appear in this area, although we have a mixture of majors from the Arts, Education, Liberal Arts, and Psychology.
+            </article>
+        </div>
+        <div class='step' data-step='splot1.2'>
+          <p>The Cream of the Crop</p>
+             <article class=vertical-center> These are the majors with high expected incomes and low unemployment rates. Observe that they are mostly majors in the field of STEM—no majors in the Arts or Education appear in this region.
             </article>
         </div>
         <div class='step' data-step='splot2'>
@@ -162,7 +195,7 @@
       <figure>
         <p>
           <svg id='intro-bchart' width="1000" height="550"></svg>
-          <svg id='main-chart' x = "50" width="1000" height="550"></svg>
+          <svg id='main-chart' display="none" width="1000" height="550"></svg>
         </p>
       </figure>
     </section>
