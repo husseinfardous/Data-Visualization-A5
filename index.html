@@ -197,11 +197,26 @@ Start scrolling to explore.
              <article class=vertical-center> This difference in gender ratios reveals a troubling trend towards higher expected incomes for majors with proportionally fewer women.
             </article>
         </div>
+        <div class='step' data-step='smult' id='vega-div'>
+          <p>Create Your Own Graph!</p>
+             <article class=vertical-center>
+                Major Category:
+                <select id='cboxMajor'></select>
+                Data Type:
+                <select id='cboxStat'></select>
+            </article>
+        </div>
+        <div class='step' data-step='the-end'>
+          <p>asdasdas</p>
+             <article class=vertical-center> Tasdasdadlly asd.
+            </article>
+        </div>
       </article>
       <figure>
         <p>
           <svg id='intro-bchart' width="1000" height="550"></svg>
           <svg id='main-chart' display="none" width="1000" height="550"></svg>
+          <div id='vega-viz'></div>
         </p>
       </figure>
     </section>
@@ -218,6 +233,15 @@ Start scrolling to explore.
 
   <!-- D3 -->
   <script src='https://unpkg.com/d3@5.9.1/dist/d3.min.js'></script>
+
+  <!-- Vega -->
+  <script src="https://cdn.jsdelivr.net/npm/vega@5.3.5/build/vega.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@3.2.1/build/vega-lite.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@4.0.0/build/vega-embed.js"></script>
+
+<!--   <script>
+
+  </script> -->
 
   <!-- Our main logic -->
   <script type="text/javascript" src="script.js"></script>
