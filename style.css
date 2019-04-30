@@ -128,9 +128,11 @@ section {
   }
 }
 
-/*#outro {
+/*
+#outro {
   height: 640px;
-}*/
+}
+*/
 
 @media (min-width: 840px) {
   .nav__examples {
