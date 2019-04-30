@@ -931,8 +931,9 @@ function createVegaChart(data){
   vlSpec = {
       "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
       "description": "Major vs. (Median, Unemployment Rate, Share of Women)",
+      "autosize": "fit",
       "width": 900,
-      "height": 300,
+      "height": 450,
       "data": {
         "values": dataset.filter(d => d.Major_category === major_selected)
       },
