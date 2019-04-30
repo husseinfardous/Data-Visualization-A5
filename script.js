@@ -487,8 +487,7 @@ function setupScatterPlot(){
         .attr("r", r)
         .style("fill", d => splot_color(d.Major_category));
       
-      g.transition()
-      .call(splot_unemp_yAxis);
+      g.call(splot_unemp_yAxis);
 
     }
     if(CURRENT_STEP === 'splot1'){
@@ -515,8 +514,7 @@ function setupScatterPlot(){
         .attr("r", r)
         .style("fill", d => splot_color(d.Major_category));
       
-      g.transition()
-      .call(splot_unemp_yAxis);
+      g.call(splot_unemp_yAxis);
       
     }
     else if(CURRENT_STEP === 'splot1.1'){
@@ -550,8 +548,7 @@ function setupScatterPlot(){
         .attr("cy", d => splot_unemp_y(d.Unemployment_rate))
         .attr("r", r)
         .style("fill", d => splot_color(d.Major_category));
-      g.transition()
-      .call(splot_unemp_yAxis);
+      g.call(splot_unemp_yAxis);
     }
     else if(CURRENT_STEP === 'splot1.2'){
       g.selectAll("rect")
@@ -584,8 +581,7 @@ function setupScatterPlot(){
         .attr("cy", d => splot_unemp_y(d.Unemployment_rate))
         .attr("r", r)
         .style("fill", d => splot_color(d.Major_category));
-      g.transition()
-        .call(splot_unemp_yAxis);
+      g.call(splot_unemp_yAxis);
     }
     else if(CURRENT_STEP === 'splot2'){
       g.selectAll("rect")
@@ -610,8 +606,7 @@ function setupScatterPlot(){
         .style("fill", d => splot_color(d.Major_category));  
         
         
-      g.transition()
-        .call(splot_women_yAxis);
+      g.call(splot_women_yAxis);
       }
   }
   
