@@ -218,7 +218,7 @@ function handleStepEnter(response) {
       splot.update();
       configureCircleInteractions();
       configureLegendInteractions();
-    }
+  }
   else if(CURRENT_STEP === 'smult'){
     svg
       .attr('display', 'none');
@@ -227,19 +227,14 @@ function handleStepEnter(response) {
       .attr('display', 'none');
     vega = d3.select("#vega-viz").select("canvas");
     vega.style("opacity", 1).attr('display', "true");
-    console.log(vega);
-
   }
   else if(CURRENT_STEP === 'the-end') {
+    console.log("HEREER?????")
     vega = d3.select("#vega-viz").select("canvas");
     vega.style("opacity", 0);
-    splotSvg.transition()
-      .duration(T_DURATION)
-      .attr('display', 'true');
-
-    svg.transition()
-        .duration(T_DURATION)
-        .attr('display', 'none');
+    svg.attr('display', 'none');
+    console.log(svg);
+    splotSvg.attr('display', 'true');
   }
   else {
     vega = d3.select("#vega-viz").select("canvas");
@@ -252,8 +247,9 @@ function handleStepEnter(response) {
         .duration(T_DURATION)
         .attr('display', 'true');
     barChart.update(CURRENT_STEP);
+    console.log(barChart)
   }
-  barChart.update(CURRENT_STEP);
+  //  barChart.update(CURRENT_STEP);
   // splot.update();
   // configureCircleInteractions();
 }
