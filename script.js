@@ -14,6 +14,12 @@ const marginBar = {
 };
 
 
+// Vega viz (last chart)
+
+var dataset;
+var major_selected = 'Agriculture & Natural Resources';
+var stat_selected = 'ShareWomen';
+
 // Scatter plot variable declarations
 var splot_x, splot_unemp_y, splot_women_y;
 var splot_xAxis, splot_unemp_yAxis, splot_women_yAxis;
@@ -39,7 +45,44 @@ const axisLabelPos = {
 
 const legend = [{gender: 'Male', color: 'steelblue', y: marginBar.top}, {gender: 'Female', color: 'red', y: marginBar.top + 20}]
 
-// const status = html`<code> highlight: none </code>`;
+const tooltipMap = {
+  "Major": "Major",
+  "Major_category": "Major Category",
+  "ShareWomen": "Share of Women",
+  "Unemployment_rate": "Unemployment Rate",
+  "Median": "Median Income",
+  "College_jobs": "# Jobs Requiring Degrees",
+  "Non_college_jobs": "# Jobs Without Degree",
+  "Low_wage_jobs": "Low Wage Jobs"
+}
+
+
+
+// Vega variables
+let vlSpec;
+
+let cboxMajor = d3.select("#cboxMajor")
+  .property("selected", major_selected)
+  .on("change", function() {
+    major_selected = d3.select(this).property("value");
+    vlSpec.data.values = dataset.filter(d => d.Major_category === major_selected);
+
+    vegaEmbed('#vega-viz', vlSpec);
+});
+
+let cboxStat = d3.select("#cboxStat")
+  .property("selected", stat_selected)
+  .on("change", function() {
+    stat_selected = d3.select(this).property("value");
+    vlSpec.encoding.y.field = stat_selected;
+
+    vegaEmbed('#vega-viz', vlSpec);
+});
+
+
+
+
+
 
 // Data files
 d3.csv("https://gist.githubusercontent.com/shpach/6413032be4ce6e57c46d84458c21dd38/raw/184af816311e3938f9ebd2c80d8f51d3b9a79cfe/agg-recent-grads.csv",
@@ -83,6 +126,34 @@ d3.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/college-ma
   }
 ).then(createSplotChart);
 
+d3.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/college-majors/recent-grads.csv",
+  function(data) {
+    return {
+      Rank: parseInt(data.Rank),
+      Major_code: data.Major_code,
+      Major: data.Major,
+      Major_category: data.Major_category,
+      Total: parseInt(data.Total),
+      Sample_size: parseInt(data.Sample_size),
+      Men: parseInt(data.Men),
+      Women: parseInt(data.Women),
+      ShareWomen: parseFloat(data.ShareWomen),
+      Employed: parseInt(data.Employed),
+      Full_time: parseInt(data.Full_time),
+      Part_time: parseInt(data.Part_time),
+      Full_time_year_round: parseInt(data.Full_time_year_round),
+      Unemployed: parseInt(data.Unemployed),
+      Unemployment_rate: parseFloat(data.Unemployment_rate),
+      Median: parseInt(data.Median),
+      P25th: parseInt(data.P25th),
+      P75th: parseInt(data.P75th),
+      College_jobs: parseInt(data.College_jobs),
+      Non_college_jobs: parseInt(data.Non_college_jobs),
+      Low_wage_jobs: parseInt(data.Low_wage_jobs)
+    }
+  }
+).then(createVegaChart);
+
 // using d3 for convenience
 var main = d3.select('main')
 var scrolly = main.select('#scrolly');
@@ -117,7 +188,6 @@ function handleResize() {
     .style('height', figureHeight + 'px')
     .style('top', figureMarginTop + 'px');
 
-
   // 3. tell scrollama to update new element dimensions
   scroller.resize();
 }
@@ -147,6 +217,15 @@ function handleStepEnter(response) {
       configureCircleInteractions();
       configureLegendInteractions();
     }
+  else if(CURRENT_STEP === 'smult'){
+    svg.transition()
+      .duration(T_DURATION)
+      .attr('display', 'none');
+
+    splotSvg.transition()
+      .duration(T_DURATION)
+      .attr('display', 'none');
+  }
   else{
     splotSvg.transition()
       .duration(T_DURATION)
@@ -207,8 +286,8 @@ function setupBarGraph() {
   const titles = {  "Median" : "Median Yearly Income",
                     "Total" : "# of Students",
                     "women" : "# of Students",
-                    "Percent_college_jobs" : "% of Graduates in Jobs Requiring College Degree"}
-    
+                    "Percent_college_jobs" : "% of Graduates in Jobs Requiring College Degree"};
+
   xBar.domain(aggData.map(d => d.Major_category));
   
   // Different bar graphs (explicitly set womenBar for the ShareWomen stacked bar chart)
@@ -259,7 +338,7 @@ function setupBarGraph() {
   svg.node().update = (o) => {
 
     // Visibility switch
-    if(CURRENT_STEP.startsWith('splot')){
+    if(CURRENT_STEP.startsWith('splot') || CURRENT_STEP === 'smult'){
       svg.transition()
       .duration(T_DURATION)
       .attr('display', 'none');
@@ -395,6 +474,8 @@ function createSplotChart(data) {
   medians = splot_data.map((value, index) => value.Median);
   unemp_rates = splot_data.map((value, index) => value.Unemployment_rate);
   share_women = splot_data.map((value, index) => value.ShareWomen);
+  
+  populateComboBoxs();
 
   setupSplotAxes();
   computeSplotQuantiles();
@@ -626,7 +707,10 @@ function configureLegendInteractions(){
   
     splot_legend.on("mouseout.brush1", function(d) {
         splot_circles.transition().style("fill", d => splot_color(d.Major_category));
+<<<<<<< HEAD
         // d3.select(status).text("brush: none");
+=======
+>>>>>>> origin/origin/feature/customGraph
     });
 }
 function configureCircleInteractions(){
@@ -639,50 +723,68 @@ function configureCircleInteractions(){
       .raise() // bring to front
       .style("stroke", "red")
       .style("stroke-width", 2);
-    // d3.select(status).text("highlight: " + d.major);
   });
 
   splot_circles.on("mouseout.highlight", function(d) {
     d3.select(this).style("stroke", null);
-    // d3.select(status).text("highlight: none");
   });
 
   // Hovering
   splot_circles.on("mouseover.hover", function(d) {
       
     let me = d3.select(this);
-    let div = d3.select("body").append("div");
+    // let div = d3.select("body").append("div");
     
-    div.attr("id", "details");
-    div.attr("class", "tooltip");
+    // div.attr("id", "details");
+    // div.attr("class", "tooltip");
     
     let keys = Object.keys(d);
-    keys.shift();
-    let rows = div.append("table")
-      .selectAll("tr")
-      .data(keys)
-      .enter()
-      .append("tr");
+    // keys.shift();
+    // let rows = div.append("table")
+    //   .selectAll("tr")
+    //   .data(keys)
+    //   .enter()
+    //   .append("tr");
     
-    rows.append("th").text(key => key);
-    rows.append("td").text(key => d[key]);
+    // rows.append("th").text(key => key);
+    // rows.append("td").text(key => d[key]);
     
-    // d3.select(status).text("hover: " + d.major);
-  });
+    let FONT_SIZE = 13;
 
-  splot_circles.on("mousemove.hover", function(d) {
-      
-    let div = d3.select("div#details");
-    let bbox = div.node().getBoundingClientRect(); // Get Height of Tooltip
+    let xPos = 2/3 * SPLOT_WIDTH; //parseInt(me.attr("cx"), 10) + 3 * parseInt(me.attr("r"), 10);
+    let yPos = SPLOT_HEIGHT - FONT_SIZE * (keys.length + 2); //parseInt(me.attr("cy"), 10) - FONT_SIZE * (keys.length + 1);
 
-    div.style("left", d3.event.clientX + "px");
-    div.style("top",  (d3.event.clientY - bbox.height) + "px");
-    div.style("z-index", "100");
+    let ttip = splotSvg
+      .append("text")
+      .attr("class", "circle_tooltip")
+      .attr("x", xPos)
+      .attr("y", yPos)
+      .style("font-size", FONT_SIZE + "px")
+      .attr("fill", "#0F0F0F");
+
+    let tooltip = "";
+
+    for(let i = 0; i < keys.length; i++){
+      let key = keys[i];
+      let value = d[key];
+      if(parseFloat(value)){
+        value = (Math.round(parseFloat(value) * 10) / 10).toString();
+        value = value.includes(".") ? value + "%" : value;
+      }
+
+      let row = tooltipMap[key] + ": " + value + "\n";
+      tooltip += row;
+      ttip.append("tspan")
+        .attr("x", xPos)
+        .attr("dy", FONT_SIZE)
+        .text(row);
+    }
+    console.log(tooltip);
+
   });
   
   splot_circles.on("mouseout.hover", function(d) {
-    d3.selectAll("div#details").remove();
-    // d3.select(status).text("hover: none");
+    d3.selectAll(".circle_tooltip").remove();
   });  
 
 
@@ -693,14 +795,20 @@ function configureCircleInteractions(){
     splot_legend.filter(e => d.Major_category === e)// bring to front
                 .style("stroke", "red")
                 .style("stroke-width", 1);
+<<<<<<< HEAD
     // d3.select(status).text("brush: " + d.Major_category);
+=======
+>>>>>>> origin/origin/feature/customGraph
   });
   
   splot_circles.on("mouseout.brush1", function(d) {
     splot_circles.transition().style("fill", d => splot_color(d.Major_category));
     splot_legend.filter(e => d.Major_category === e)// bring to front
                 .style("stroke", null);
+<<<<<<< HEAD
     // d3.select(status).text("brush: none");
+=======
+>>>>>>> origin/origin/feature/customGraph
   });
 
   // Brushing 2
@@ -711,7 +819,6 @@ function configureCircleInteractions(){
     
     if (d3.event.selection) {
       
-      // d3.select(status).text("brush: " + d3.event.selection);
       const [[x0, y0], [x1, y1]] = d3.event.selection;      
       
       splot_circles.classed("dim", function(d) {
@@ -722,7 +829,6 @@ function configureCircleInteractions(){
     }
     
     else {
-      // d3.select(status).text("brush: none");
       splot_circles.classed("dim", false);
     }
   }
@@ -788,6 +894,72 @@ function setupSplotAxes(){
 
   splotSvg.append("g").call(splot_xAxis);
   
+}
+
+
+// Vega related functions
+function populateComboBoxs(){
+
+  let optionsMajor = cboxMajor.selectAll("option")
+    .data(major_categs.values().sort(function(x, y) {return d3.ascending(x, y)}), d => d)
+    .enter()
+    .append("option");
+
+  optionsMajor
+    .attr("value", d => d)
+    .text(d => d);
+
+  console.log(Object.keys(tooltipMap).slice(2));
+  let optionsStat = cboxStat.selectAll("option")
+    .data(Object.keys(tooltipMap).slice(2), d => d)
+    .enter()
+    .append("option"); 
+
+  optionsStat
+    .attr("value", d => d)
+    .text(d => tooltipMap[d]);
+}
+
+function toTitleCase(str) {
+    str = str.toLowerCase() // str = "i'm a little tea pot";
+  
+           .split(' ') // str = ["i'm", "a", "little", "tea", "pot"];
+         
+           .map(function(word) {
+                if (word === "engineering") {
+                    return "Eng."
+                } else {
+                    return word.replace(word[0], word[0].toUpperCase());
+                }
+                
+            });
+    return str.join(' ');
+}
+function createVegaChart(data){
+  dataset = data;
+  dataset.forEach( function (d) { d.Major = toTitleCase(d.Major) })
+
+  vlSpec = {
+      "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
+      "description": "Major vs. (Median, Unemployment Rate, Share of Women)",
+      "width": 900,
+      "height": 300,
+      "data": {
+        "values": dataset.filter(d => d.Major_category === major_selected)
+      },
+      "mark": "bar",
+      "encoding": {
+        "x": {"field": "Major", "type": "ordinal", 
+              "axis" : {"labelAngle" : -30, "labelOverlap" : false, "labelFontSize" : 10,
+                        "labelFontWidth" : "bold"}},
+        "y": {"field": stat_selected, "type": "quantitative",
+              "axis" : {"title" : tooltipMap[stat_selected]}}
+      }
+      
+  };
+
+  vegaEmbed('#vega-viz', vlSpec);
+
 }
 
 
