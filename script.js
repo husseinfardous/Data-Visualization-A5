@@ -707,10 +707,6 @@ function configureLegendInteractions(){
   
     splot_legend.on("mouseout.brush1", function(d) {
         splot_circles.transition().style("fill", d => splot_color(d.Major_category));
-<<<<<<< HEAD
-        // d3.select(status).text("brush: none");
-=======
->>>>>>> origin/origin/feature/customGraph
     });
 }
 function configureCircleInteractions(){
@@ -795,20 +791,13 @@ function configureCircleInteractions(){
     splot_legend.filter(e => d.Major_category === e)// bring to front
                 .style("stroke", "red")
                 .style("stroke-width", 1);
-<<<<<<< HEAD
-    // d3.select(status).text("brush: " + d.Major_category);
-=======
->>>>>>> origin/origin/feature/customGraph
+
   });
   
   splot_circles.on("mouseout.brush1", function(d) {
     splot_circles.transition().style("fill", d => splot_color(d.Major_category));
     splot_legend.filter(e => d.Major_category === e)// bring to front
                 .style("stroke", null);
-<<<<<<< HEAD
-    // d3.select(status).text("brush: none");
-=======
->>>>>>> origin/origin/feature/customGraph
   });
 
   // Brushing 2
