@@ -651,37 +651,65 @@ function configureCircleInteractions(){
   splot_circles.on("mouseover.hover", function(d) {
       
     let me = d3.select(this);
-    let div = d3.select("body").append("div");
+    // let div = d3.select("body").append("div");
     
-    div.attr("id", "details");
-    div.attr("class", "tooltip");
+    // div.attr("id", "details");
+    // div.attr("class", "tooltip");
     
     let keys = Object.keys(d);
-    keys.shift();
-    let rows = div.append("table")
-      .selectAll("tr")
-      .data(keys)
-      .enter()
-      .append("tr");
+    // keys.shift();
+    // let rows = div.append("table")
+    //   .selectAll("tr")
+    //   .data(keys)
+    //   .enter()
+    //   .append("tr");
     
-    rows.append("th").text(key => key);
-    rows.append("td").text(key => d[key]);
+    // rows.append("th").text(key => key);
+    // rows.append("td").text(key => d[key]);
     
-    // d3.select(status).text("hover: " + d.major);
+    let FONT_SIZE = 13;
+
+    let xPos = parseInt(me.attr("cx"), 10) + 3 * parseInt(me.attr("r"), 10);
+    let yPos = parseInt(me.attr("cy"), 10) - FONT_SIZE * (keys.length + 1);
+
+    let ttip = splotSvg
+      .append("text")
+      .attr("class", "circle_tooltip")
+      .attr("x", xPos)
+      .attr("y", yPos)
+      .style("font-size", FONT_SIZE + "px")
+      .attr("fill", "#0F0F0F");
+
+    let tooltip = "";
+
+    for(let i = 0; i < keys.length; i++){
+      let key = keys[i];
+      let row = key + ": " + d[key] + "\n";
+      tooltip += row;
+      ttip.append("tspan")
+        .attr("x", xPos)
+        .attr("dy", FONT_SIZE)
+        .text(row);
+    }
+    console.log(tooltip);
+
+    // ttip
+    //   // .attr("id", "#circle_tooltip")
+    //   .text(tooltip)
   });
 
   splot_circles.on("mousemove.hover", function(d) {
       
-    let div = d3.select("div#details");
-    let bbox = div.node().getBoundingClientRect(); // Get Height of Tooltip
+    // let div = d3.select("div#details");
+    // let bbox = div.node().getBoundingClientRect(); // Get Height of Tooltip
 
-    div.style("left", d3.event.clientX + "px");
-    div.style("top",  (d3.event.clientY - bbox.height) + "px");
-    div.style("z-index", "100");
+    // div.style("left", d3.event.clientX + "px");
+    // div.style("top",  (d3.event.clientY - bbox.height) + "px");
+    // div.style("z-index", "100");
   });
   
   splot_circles.on("mouseout.hover", function(d) {
-    d3.selectAll("div#details").remove();
+    d3.selectAll(".circle_tooltip").remove();
     // d3.select(status).text("hover: none");
   });  
 
