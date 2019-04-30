@@ -39,7 +39,16 @@ const axisLabelPos = {
 
 const legend = [{gender: 'Male', color: 'steelblue', y: marginBar.top}, {gender: 'Female', color: 'red', y: marginBar.top + 20}]
 
-// const status = html`<code> highlight: none </code>`;
+const tooltipMap = {
+  "Major": "Major",
+  "Major_category": "Major Category",
+  "ShareWomen": "Share of Women",
+  "Unemployment_rate": "Unemployment Rate",
+  "Median": "Median",
+  "College_jobs": "# Jobs Requiring Degrees",
+  "Non_college_jobs": "# Jobs Without Degree",
+  "Low_wage_jobs": "Low Wage Jobs"
+}
 
 // Data files
 d3.csv("https://gist.githubusercontent.com/shpach/6413032be4ce6e57c46d84458c21dd38/raw/184af816311e3938f9ebd2c80d8f51d3b9a79cfe/agg-recent-grads.csv",
@@ -207,8 +216,8 @@ function setupBarGraph() {
   const titles = {  "Median" : "Median Yearly Income",
                     "Total" : "# of Students",
                     "women" : "# of Students",
-                    "Percent_college_jobs" : "% of Graduates in Jobs Requiring College Degree"}
-    
+                    "Percent_college_jobs" : "% of Graduates in Jobs Requiring College Degree"};
+
   xBar.domain(aggData.map(d => d.Major_category));
   
   // Different bar graphs (explicitly set womenBar for the ShareWomen stacked bar chart)
@@ -669,8 +678,12 @@ function configureCircleInteractions(){
     
     let FONT_SIZE = 13;
 
-    let xPos = parseInt(me.attr("cx"), 10) + 3 * parseInt(me.attr("r"), 10);
-    let yPos = parseInt(me.attr("cy"), 10) - FONT_SIZE * (keys.length + 1);
+    let xPos = 2/3 * SPLOT_WIDTH; //parseInt(me.attr("cx"), 10) + 3 * parseInt(me.attr("r"), 10);
+    let yPos = SPLOT_HEIGHT - FONT_SIZE * (keys.length + 2); //parseInt(me.attr("cy"), 10) - FONT_SIZE * (keys.length + 1);
+
+    // let ttip = splotSvg
+    //   .append("g")
+    //   .attr("transform", "translate(" + xPos + "," + yPos + ")");
 
     let ttip = splotSvg
       .append("text")
@@ -684,7 +697,13 @@ function configureCircleInteractions(){
 
     for(let i = 0; i < keys.length; i++){
       let key = keys[i];
-      let row = key + ": " + d[key] + "\n";
+      let value = d[key];
+      if(parseFloat(value)){
+        value = (Math.round(parseFloat(value) * 10) / 10).toString();
+        value = value.includes(".") ? value + "%" : value;
+      }
+
+      let row = tooltipMap[key] + ": " + value + "\n";
       tooltip += row;
       ttip.append("tspan")
         .attr("x", xPos)
