@@ -220,16 +220,28 @@ function handleStepEnter(response) {
       configureLegendInteractions();
     }
   else if(CURRENT_STEP === 'smult'){
-    vega = d3.select("#vega-viz").select("canvas");
-    vega.style("opacity", 1);
-    console.log(vega);
     svg
       .attr('display', 'none');
 
     splotSvg
       .attr('display', 'none');
+    vega = d3.select("#vega-viz").select("canvas");
+    vega.style("opacity", 1).attr('display', "true");
+    console.log(vega);
+
   }
-  else{
+  else if(CURRENT_STEP === 'the-end') {
+    vega = d3.select("#vega-viz").select("canvas");
+    vega.style("opacity", 0);
+    splotSvg.transition()
+      .duration(T_DURATION)
+      .attr('display', 'true');
+
+    svg.transition()
+        .duration(T_DURATION)
+        .attr('display', 'none');
+  }
+  else {
     vega = d3.select("#vega-viz").select("canvas");
     vega.style("opacity", 0);
     splotSvg.transition()
