@@ -17,8 +17,8 @@ const marginBar = {
 // Vega viz (last chart)
 
 var dataset;
-var major_selected = 'Engineering';
-var stat_selected = 'Median';
+var major_selected = 'Agriculture & Natural Resources';
+var stat_selected = 'ShareWomen';
 
 // Scatter plot variable declarations
 var splot_x, splot_unemp_y, splot_women_y;
@@ -50,7 +50,7 @@ const tooltipMap = {
   "Major_category": "Major Category",
   "ShareWomen": "Share of Women",
   "Unemployment_rate": "Unemployment Rate",
-  "Median": "Median",
+  "Median": "Median Income",
   "College_jobs": "# Jobs Requiring Degrees",
   "Non_college_jobs": "# Jobs Without Degree",
   "Low_wage_jobs": "Low Wage Jobs"
@@ -889,7 +889,7 @@ function setupSplotAxes(){
 function populateComboBoxs(){
 
   let optionsMajor = cboxMajor.selectAll("option")
-    .data(major_categs.values(), d => d)
+    .data(major_categs.values().sort(function(x, y) {return d3.ascending(x, y)}), d => d)
     .enter()
     .append("option");
 
@@ -905,11 +905,27 @@ function populateComboBoxs(){
 
   optionsStat
     .attr("value", d => d)
-    .text(d => d);
+    .text(d => tooltipMap[d]);
 }
 
+function toTitleCase(str) {
+    str = str.toLowerCase() // str = "i'm a little tea pot";
+  
+           .split(' ') // str = ["i'm", "a", "little", "tea", "pot"];
+         
+           .map(function(word) {
+                if (word === "engineering") {
+                    return "Eng."
+                } else {
+                    return word.replace(word[0], word[0].toUpperCase());
+                }
+                
+            });
+    return str.join(' ');
+}
 function createVegaChart(data){
   dataset = data;
+  dataset.forEach( function (d) { d.Major = toTitleCase(d.Major) })
 
   vlSpec = {
       "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
@@ -921,9 +937,13 @@ function createVegaChart(data){
       },
       "mark": "bar",
       "encoding": {
-        "x": {"field": "Major", "type": "ordinal"},
-        "y": {"field": stat_selected, "type": "quantitative"}
+        "x": {"field": "Major", "type": "ordinal", 
+              "axis" : {"labelAngle" : -30, "labelOverlap" : false, "labelFontSize" : 10,
+                        "labelFontWidth" : "bold"}},
+        "y": {"field": stat_selected, "type": "quantitative",
+              "axis" : {"title" : tooltipMap[stat_selected]}}
       }
+      
   };
 
   vegaEmbed('#vega-viz', vlSpec);

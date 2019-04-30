@@ -29,7 +29,7 @@
 
     article {
       position: relative;
-      padding: 0 rem;
+      padding: 2rem 0 0rem 0;
       max-width: 20rem;
     }
 
@@ -198,11 +198,17 @@ Start scrolling to explore.
             </article>
         </div>
         <div class='step' data-step='smult' id='vega-div'>
-          <p>Create Your Own Graph!</p>
+          <p>Find Your Major and Explore!</p>
+             <article class=vertical-center-tip>
+                 Use the following dropdown menus to explore major categories through different dimensions. Hover over the chart to the right to read specific values.
+            </article>
              <article class=vertical-center>
                 Major Category:
-                <select id='cboxMajor'></select>
-                Data Type:
+                 <pre></pre>
+                <select id='cboxMajor' width = 100%></select>
+            </article>
+            <article class=vertical-center>
+                Data Type:<pre></pre>
                 <select id='cboxStat'></select>
             </article>
         </div>
