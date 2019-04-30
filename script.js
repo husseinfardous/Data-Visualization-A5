@@ -205,6 +205,8 @@ function handleStepEnter(response) {
 
   // update graphic based on step
    if(CURRENT_STEP.startsWith('splot')){
+      vega = d3.select("#vega-viz").select("canvas");
+      vega.style("opacity", 0);
       svg.transition()
       .duration(T_DURATION)
       .attr('display', 'none');
@@ -218,15 +220,18 @@ function handleStepEnter(response) {
       configureLegendInteractions();
     }
   else if(CURRENT_STEP === 'smult'){
-    svg.transition()
-      .duration(T_DURATION)
+    vega = d3.select("#vega-viz").select("canvas");
+    vega.style("opacity", 1);
+    console.log(vega);
+    svg
       .attr('display', 'none');
 
-    splotSvg.transition()
-      .duration(T_DURATION)
+    splotSvg
       .attr('display', 'none');
   }
   else{
+    vega = d3.select("#vega-viz").select("canvas");
+    vega.style("opacity", 0);
     splotSvg.transition()
       .duration(T_DURATION)
       .attr('display', 'none');
