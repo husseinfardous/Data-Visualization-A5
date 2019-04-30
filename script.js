@@ -39,7 +39,16 @@ const axisLabelPos = {
 
 const legend = [{gender: 'Male', color: 'steelblue', y: marginBar.top}, {gender: 'Female', color: 'red', y: marginBar.top + 20}]
 
-// const status = html`<code> highlight: none </code>`;
+const tooltipMap = {
+  "Major": "Major",
+  "Major_category": "Major Category",
+  "ShareWomen": "Share of Women",
+  "Unemployment_rate": "Unemployment Rate",
+  "Median": "Median",
+  "College_jobs": "# Jobs Requiring Degrees",
+  "Non_college_jobs": "# Jobs Without Degree",
+  "Low_wage_jobs": "Low Wage Jobs"
+}
 
 // Data files
 d3.csv("https://gist.githubusercontent.com/shpach/6413032be4ce6e57c46d84458c21dd38/raw/184af816311e3938f9ebd2c80d8f51d3b9a79cfe/agg-recent-grads.csv",
@@ -207,8 +216,8 @@ function setupBarGraph() {
   const titles = {  "Median" : "Median Yearly Income",
                     "Total" : "# of Students",
                     "women" : "# of Students",
-                    "Percent_college_jobs" : "% of Graduates in Jobs Requiring College Degree"}
-    
+                    "Percent_college_jobs" : "% of Graduates in Jobs Requiring College Degree"};
+
   xBar.domain(aggData.map(d => d.Major_category));
   
   // Different bar graphs (explicitly set womenBar for the ShareWomen stacked bar chart)
@@ -626,7 +635,6 @@ function configureLegendInteractions(){
   
     splot_legend.on("mouseout.brush1", function(d) {
         splot_circles.transition().style("fill", d => splot_color(d.Major_category));
-        // d3.select(status).text("brush: none");
     });
 }
 function configureCircleInteractions(){
@@ -639,50 +647,68 @@ function configureCircleInteractions(){
       .raise() // bring to front
       .style("stroke", "red")
       .style("stroke-width", 2);
-    // d3.select(status).text("highlight: " + d.major);
   });
 
   splot_circles.on("mouseout.highlight", function(d) {
     d3.select(this).style("stroke", null);
-    // d3.select(status).text("highlight: none");
   });
 
   // Hovering
   splot_circles.on("mouseover.hover", function(d) {
       
     let me = d3.select(this);
-    let div = d3.select("body").append("div");
+    // let div = d3.select("body").append("div");
     
-    div.attr("id", "details");
-    div.attr("class", "tooltip");
+    // div.attr("id", "details");
+    // div.attr("class", "tooltip");
     
     let keys = Object.keys(d);
-    keys.shift();
-    let rows = div.append("table")
-      .selectAll("tr")
-      .data(keys)
-      .enter()
-      .append("tr");
+    // keys.shift();
+    // let rows = div.append("table")
+    //   .selectAll("tr")
+    //   .data(keys)
+    //   .enter()
+    //   .append("tr");
     
-    rows.append("th").text(key => key);
-    rows.append("td").text(key => d[key]);
+    // rows.append("th").text(key => key);
+    // rows.append("td").text(key => d[key]);
     
-    // d3.select(status).text("hover: " + d.major);
-  });
+    let FONT_SIZE = 13;
 
-  splot_circles.on("mousemove.hover", function(d) {
-      
-    let div = d3.select("div#details");
-    let bbox = div.node().getBoundingClientRect(); // Get Height of Tooltip
+    let xPos = 2/3 * SPLOT_WIDTH; //parseInt(me.attr("cx"), 10) + 3 * parseInt(me.attr("r"), 10);
+    let yPos = SPLOT_HEIGHT - FONT_SIZE * (keys.length + 2); //parseInt(me.attr("cy"), 10) - FONT_SIZE * (keys.length + 1);
 
-    div.style("left", d3.event.clientX + "px");
-    div.style("top",  (d3.event.clientY - bbox.height) + "px");
-    div.style("z-index", "100");
+    let ttip = splotSvg
+      .append("text")
+      .attr("class", "circle_tooltip")
+      .attr("x", xPos)
+      .attr("y", yPos)
+      .style("font-size", FONT_SIZE + "px")
+      .attr("fill", "#0F0F0F");
+
+    let tooltip = "";
+
+    for(let i = 0; i < keys.length; i++){
+      let key = keys[i];
+      let value = d[key];
+      if(parseFloat(value)){
+        value = (Math.round(parseFloat(value) * 10) / 10).toString();
+        value = value.includes(".") ? value + "%" : value;
+      }
+
+      let row = tooltipMap[key] + ": " + value + "\n";
+      tooltip += row;
+      ttip.append("tspan")
+        .attr("x", xPos)
+        .attr("dy", FONT_SIZE)
+        .text(row);
+    }
+    console.log(tooltip);
+
   });
   
   splot_circles.on("mouseout.hover", function(d) {
-    d3.selectAll("div#details").remove();
-    // d3.select(status).text("hover: none");
+    d3.selectAll(".circle_tooltip").remove();
   });  
 
 
@@ -693,14 +719,12 @@ function configureCircleInteractions(){
     splot_legend.filter(e => d.Major_category === e)// bring to front
                 .style("stroke", "red")
                 .style("stroke-width", 1);
-    // d3.select(status).text("brush: " + d.Major_category);
   });
   
   splot_circles.on("mouseout.brush1", function(d) {
     splot_circles.transition().style("fill", d => splot_color(d.Major_category));
     splot_legend.filter(e => d.Major_category === e)// bring to front
                 .style("stroke", null);
-    // d3.select(status).text("brush: none");
   });
 
   // Brushing 2
@@ -711,7 +735,6 @@ function configureCircleInteractions(){
     
     if (d3.event.selection) {
       
-      // d3.select(status).text("brush: " + d3.event.selection);
       const [[x0, y0], [x1, y1]] = d3.event.selection;      
       
       splot_circles.classed("dim", function(d) {
@@ -722,7 +745,6 @@ function configureCircleInteractions(){
     }
     
     else {
-      // d3.select(status).text("brush: none");
       splot_circles.classed("dim", false);
     }
   }
