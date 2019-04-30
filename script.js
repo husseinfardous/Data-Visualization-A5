@@ -635,7 +635,6 @@ function configureLegendInteractions(){
   
     splot_legend.on("mouseout.brush1", function(d) {
         splot_circles.transition().style("fill", d => splot_color(d.Major_category));
-        // d3.select(status).text("brush: none");
     });
 }
 function configureCircleInteractions(){
@@ -648,12 +647,10 @@ function configureCircleInteractions(){
       .raise() // bring to front
       .style("stroke", "red")
       .style("stroke-width", 2);
-    // d3.select(status).text("highlight: " + d.major);
   });
 
   splot_circles.on("mouseout.highlight", function(d) {
     d3.select(this).style("stroke", null);
-    // d3.select(status).text("highlight: none");
   });
 
   // Hovering
@@ -680,10 +677,6 @@ function configureCircleInteractions(){
 
     let xPos = 2/3 * SPLOT_WIDTH; //parseInt(me.attr("cx"), 10) + 3 * parseInt(me.attr("r"), 10);
     let yPos = SPLOT_HEIGHT - FONT_SIZE * (keys.length + 2); //parseInt(me.attr("cy"), 10) - FONT_SIZE * (keys.length + 1);
-
-    // let ttip = splotSvg
-    //   .append("g")
-    //   .attr("transform", "translate(" + xPos + "," + yPos + ")");
 
     let ttip = splotSvg
       .append("text")
@@ -712,24 +705,10 @@ function configureCircleInteractions(){
     }
     console.log(tooltip);
 
-    // ttip
-    //   // .attr("id", "#circle_tooltip")
-    //   .text(tooltip)
-  });
-
-  splot_circles.on("mousemove.hover", function(d) {
-      
-    // let div = d3.select("div#details");
-    // let bbox = div.node().getBoundingClientRect(); // Get Height of Tooltip
-
-    // div.style("left", d3.event.clientX + "px");
-    // div.style("top",  (d3.event.clientY - bbox.height) + "px");
-    // div.style("z-index", "100");
   });
   
   splot_circles.on("mouseout.hover", function(d) {
     d3.selectAll(".circle_tooltip").remove();
-    // d3.select(status).text("hover: none");
   });  
 
 
@@ -740,14 +719,12 @@ function configureCircleInteractions(){
     splot_legend.filter(e => d.Major_category === e)// bring to front
                 .style("stroke", "red")
                 .style("stroke-width", 1);
-    // d3.select(status).text("brush: " + d.Major_category);
   });
   
   splot_circles.on("mouseout.brush1", function(d) {
     splot_circles.transition().style("fill", d => splot_color(d.Major_category));
     splot_legend.filter(e => d.Major_category === e)// bring to front
                 .style("stroke", null);
-    // d3.select(status).text("brush: none");
   });
 
   // Brushing 2
@@ -758,7 +735,6 @@ function configureCircleInteractions(){
     
     if (d3.event.selection) {
       
-      // d3.select(status).text("brush: " + d3.event.selection);
       const [[x0, y0], [x1, y1]] = d3.event.selection;      
       
       splot_circles.classed("dim", function(d) {
@@ -769,7 +745,6 @@ function configureCircleInteractions(){
     }
     
     else {
-      // d3.select(status).text("brush: none");
       splot_circles.classed("dim", false);
     }
   }
