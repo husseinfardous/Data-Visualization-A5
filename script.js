@@ -14,8 +14,7 @@ const marginBar = {
 };
 
 // Custom Bar Chart (at end)
-var xCusBar, yCusBar, xAxisCusBar, yAxisCusBar;
-var aggData;
+var xCustomBar, yCustomBar, xAxisCustomBar, yAxisCustomBar;
 var customBarChart;
 
 
@@ -97,6 +96,7 @@ var step = article.selectAll('.step');
 
 let svg = figure.select('p').select('#intro-bchart');
 let splotSvg = figure.select('p').select('#main-chart');
+let customSvg = figure.select('p').select('#custom-bchart');
 
 BAR_CHART_WIDTH = svg.attr("width");
 BAR_CHART_HEIGHT = svg.attr("height");
@@ -497,7 +497,7 @@ function setupCustomBarGraph() {
                     "women" : "# of Students",
                     "Percent_college_jobs" : "% of Graduates in Jobs Requiring College Degree"};
 
-  xBar.domain(splot_data.map(d => d.Major_category));
+  xCustomBar.domain(splot_data.map(d => d.Major));
   
   // Different bar graphs (explicitly set womenBar for the ShareWomen stacked bar chart)
   const bar = svg.append("g")
@@ -505,120 +505,69 @@ function setupCustomBarGraph() {
       .selectAll("rect")
       .data(splot_data, d => d.Major)
       .join("rect")
-      .attr("x", -xBar.bandwidth())
+      .attr("x", -xCustomBar.bandwidth())
       .attr("y", 0)
-      .attr("transform", d => rotate(xBar(d.Major_category), yBar(0), 180))
-      .attr("width", xBar.bandwidth());
+      .attr("transform", d => rotate(xCustomBar(d.Major), yCustomBar(0), 180))
+      .attr("width", xCustomBar.bandwidth());
 
-  // Need special logic for Share of Women bar since it is overlayed for the stacked bar chart
-  const womenBar = svg.append("g")
-      .attr("fill", "red")
-      .selectAll("rect")
-      .data(aggData, d => d.Major_category)
-      .join("rect")
-      .attr("x", -xBar.bandwidth())
-      .attr("y", 0)
-      .attr("transform", d => rotate(xBar(d.Major_category), yBar(0), 180))
-      .attr("width", xBar.bandwidth())
-      .style("opacity", 0);
 
-  svg.node().update = (o) => {
+  customSvg.node().update = (o) => {
 
     // Visibility switch
     if(CURRENT_STEP.startsWith('splot') || CURRENT_STEP === 'smult'){
-      svg.transition()
+      customSvg.transition()
       .duration(T_DURATION)
       .attr('display', 'none');
         return;
     }
     else{
-      svg.attr('display', 'true')
-    }
-
-    // Special logic for displaying % women
-    if(CURRENT_STEP === 'women'){
-
-      yBar = d3.scaleLinear()
-        .domain([0, d3.max(aggData, d => d['Total'])]).nice()
-        .range([BAR_CHART_HEIGHT - marginBar.bottom, marginBar.top]);
-
-      womenBar
-        .attr("height", d => yBar(0) - yBar(d['ShareWomen'] * d['Total']))
-        .transition()
-        .duration(T_DURATION)
-        .style("opacity", 1);
-      
-      barLegends.transition()
-        .duration(T_DURATION)
-        .style("opacity", 1);
-      
-      bar.data(aggData, d => d.Major_category)
-        .transition()
-        .duration(T_DURATION)
-        .attr("height", d => yBar(0) - yBar(d['Total']));
-        // .attr("y", d => yBar(0));
-      
-      // bar.data(aggData, d => d.Major_category)
-      //   .transition()
-      //   .duration(T_DURATION)
-      //   .attr("height", d => yBar(0) - yBar(d['Total'] * (1 - d['ShareWomen'])))
-      //   .attr("y", d => yBar(0) - yBar(d['ShareWomen'] * d['Total']));
-
-      
+      customSvg.attr('display', 'true')
     }
     
-    else{
-      yBar = d3.scaleLinear()
-        .domain([0, d3.max(aggData, d => d[CURRENT_STEP])]).nice()
-        .range([BAR_CHART_HEIGHT - marginBar.bottom, marginBar.top]);
+    yCustomBar = d3.scaleLinear()
+      .domain([0, d3.max(splot_data, d => d[CURRENT_STEP])]).nice()
+      .range([BAR_CHART_HEIGHT - marginBar.bottom, marginBar.top]);
 
-      barLegends.transition()
-        .duration(T_DURATION)
-        .style("opacity", 0);
 
-      bar.data(aggData, d => d.Major_category)
-      .transition()
-      .duration(T_DURATION)
-      .attr("height", d => yBar(0) - yBar(d[o])); 
-      
-      womenBar.transition()
-        .duration(T_DURATION)
-        .style("opacity", 0);
-    }
+    bar.data(splot_data, d => d.Major)
+    .transition()
+    .duration(T_DURATION)
+    .attr("height", d => yCustomBar(0) - yCustomBar(d[o])); 
+    
 
     if (CURRENT_STEP === "Percent_college_jobs") {
-        yAxisBar = g => g
+        yAxisCustomBar = g => g
             .attr("transform", `translate(${marginBar.left},0)`)
-            .call(d3.axisLeft(yBar).tickFormat(d => d + "%"))
+            .call(d3.axisLeft(yCustomBar).tickFormat(d => d + "%"))
             .call(g => g.select(".domain").remove())
     } else {
-        yAxisBar = g => g
+        yAxisCustomBar = g => g
             .attr("transform", `translate(${marginBar.left},0)`)
-            .call(d3.axisLeft(yBar))
+            .call(d3.axisLeft(yCustomBar))
             .call(g => g.select(".domain").remove())
     }
 
     // Animate y-axis on rescale between different graphs
-    svg.select(".y-axes")
+    customSvg.select(".y-axes")
       .transition()
-      .call(yAxisBar);
+      .call(yAxisCustomBar);
 
-    svg.select(".y-label")
-      .transition()
-      .text(titles[CURRENT_STEP]);
+    // svg.select(".y-label")
+    //   .transition()
+    //   .text(titles[CURRENT_STEP]);
     
   };
 
-  barChart = svg.node();
+  customBarChart = customSvg.node();
 }
 
 function setupCustomAxes() {
-  xBar = d3.scaleBand()
+  xCustomBar = d3.scaleBand()
     .domain(aggData.map(d => d.Major_category))
     .range([marginBar.left, BAR_CHART_WIDTH - marginBar.right])
     .padding(0.1);
 
-  yBar = d3.scaleLinear()
+  yCustomBar = d3.scaleLinear()
     .domain([0, d3.max(aggData, d => d[CURRENT_STEP])]).nice()
     .range([BAR_CHART_HEIGHT - marginBar.bottom, marginBar.top])
 
@@ -631,7 +580,7 @@ function setupCustomAxes() {
       .call(d3.axisLeft(yBar))
       .call(g => g.select(".domain").remove());
 
-  gx = svg.append("g")
+  gx = customSvg.append("g")
       .call(xAxisCustomBar)
       .selectAll("text")  
       .style("text-anchor", "end")
@@ -639,11 +588,11 @@ function setupCustomAxes() {
       .attr("dy", ".15em")
       .attr("transform", "rotate(-20)");
 
-  gy = svg.append("g")
+  gy = customSvg.append("g")
       .attr("class", "y-axes")
       .call(yAxisCustomBar);
 
-  yLabel = svg.append("text")
+  yLabel = customSvg.append("text")
     .attr("class", "y-label")
     .attr("transform", rotate(axisLabelPos.yAxis, BAR_CHART_HEIGHT/2, -90))
     .style("text-anchor", "middle")
