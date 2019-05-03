@@ -13,6 +13,11 @@ const marginBar = {
   top: 100
 };
 
+// Custom Bar Chart (at end)
+var xCusBar, yCusBar, xAxisCusBar, yAxisCusBar;
+var aggData;
+var customBarChart;
+
 
 // Vega viz (last chart)
 
@@ -82,6 +87,27 @@ let cboxStat = d3.select("#cboxStat")
 
 
 
+
+// Scrollama Related Setup
+var main = d3.select('main')
+var scrolly = main.select('#scrolly');
+var figure = scrolly.select('figure');
+var article = scrolly.select('article');
+var step = article.selectAll('.step');
+
+let svg = figure.select('p').select('#intro-bchart');
+let splotSvg = figure.select('p').select('#main-chart');
+
+BAR_CHART_WIDTH = svg.attr("width");
+BAR_CHART_HEIGHT = svg.attr("height");
+
+SPLOT_WIDTH = splotSvg.attr("width");
+SPLOT_HEIGHT = splotSvg.attr("height");
+
+var CURRENT_STEP = 'Median';
+
+// initialize the scrollama
+var scroller = scrollama();
 
 
 // Data files
@@ -154,26 +180,6 @@ d3.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/college-ma
   }
 ).then(createVegaChart);
 
-// using d3 for convenience
-var main = d3.select('main')
-var scrolly = main.select('#scrolly');
-var figure = scrolly.select('figure');
-var article = scrolly.select('article');
-var step = article.selectAll('.step');
-
-let svg = figure.select('p').select('#intro-bchart');
-let splotSvg = figure.select('p').select('#main-chart');
-
-BAR_CHART_WIDTH = svg.attr("width");
-BAR_CHART_HEIGHT = svg.attr("height");
-
-SPLOT_WIDTH = splotSvg.attr("width");
-SPLOT_HEIGHT = splotSvg.attr("height");
-
-var CURRENT_STEP = 'Median';
-
-// initialize the scrollama
-var scroller = scrollama();
 
 // generic window resize listener event
 function handleResize() {
@@ -225,11 +231,11 @@ function handleStepEnter(response) {
 
     splotSvg
       .attr('display', 'none');
-    vega = d3.select("#vega-viz").select("canvas");
-    vega.style("opacity", 1).attr('display', "true");
+    // vega = d3.select("#vega-viz").select("canvas");
+    // vega.style("opacity", 1).attr('display', "true");
+
   }
   else if(CURRENT_STEP === 'the-end') {
-    console.log("HEREER?????")
     vega = d3.select("#vega-viz").select("canvas");
     vega.style("opacity", 0);
     svg.attr('display', 'none');
@@ -247,7 +253,6 @@ function handleStepEnter(response) {
         .duration(T_DURATION)
         .attr('display', 'true');
     barChart.update(CURRENT_STEP);
-    console.log(barChart)
   }
   //  barChart.update(CURRENT_STEP);
   // splot.update();
@@ -478,6 +483,177 @@ function setupAxes() {
 }
 
 
+
+
+
+/****** Custom Bar Chart ******/
+function setupCustomBarGraph() {
+  
+  const LEGEND_X = 800;
+  const LEGEND_SIZE = 10;
+
+  const titles = {  "Median" : "Median Yearly Income",
+                    "Total" : "# of Students",
+                    "women" : "# of Students",
+                    "Percent_college_jobs" : "% of Graduates in Jobs Requiring College Degree"};
+
+  xBar.domain(splot_data.map(d => d.Major_category));
+  
+  // Different bar graphs (explicitly set womenBar for the ShareWomen stacked bar chart)
+  const bar = svg.append("g")
+      .attr("fill", "steelblue")
+      .selectAll("rect")
+      .data(splot_data, d => d.Major)
+      .join("rect")
+      .attr("x", -xBar.bandwidth())
+      .attr("y", 0)
+      .attr("transform", d => rotate(xBar(d.Major_category), yBar(0), 180))
+      .attr("width", xBar.bandwidth());
+
+  // Need special logic for Share of Women bar since it is overlayed for the stacked bar chart
+  const womenBar = svg.append("g")
+      .attr("fill", "red")
+      .selectAll("rect")
+      .data(aggData, d => d.Major_category)
+      .join("rect")
+      .attr("x", -xBar.bandwidth())
+      .attr("y", 0)
+      .attr("transform", d => rotate(xBar(d.Major_category), yBar(0), 180))
+      .attr("width", xBar.bandwidth())
+      .style("opacity", 0);
+
+  svg.node().update = (o) => {
+
+    // Visibility switch
+    if(CURRENT_STEP.startsWith('splot') || CURRENT_STEP === 'smult'){
+      svg.transition()
+      .duration(T_DURATION)
+      .attr('display', 'none');
+        return;
+    }
+    else{
+      svg.attr('display', 'true')
+    }
+
+    // Special logic for displaying % women
+    if(CURRENT_STEP === 'women'){
+
+      yBar = d3.scaleLinear()
+        .domain([0, d3.max(aggData, d => d['Total'])]).nice()
+        .range([BAR_CHART_HEIGHT - marginBar.bottom, marginBar.top]);
+
+      womenBar
+        .attr("height", d => yBar(0) - yBar(d['ShareWomen'] * d['Total']))
+        .transition()
+        .duration(T_DURATION)
+        .style("opacity", 1);
+      
+      barLegends.transition()
+        .duration(T_DURATION)
+        .style("opacity", 1);
+      
+      bar.data(aggData, d => d.Major_category)
+        .transition()
+        .duration(T_DURATION)
+        .attr("height", d => yBar(0) - yBar(d['Total']));
+        // .attr("y", d => yBar(0));
+      
+      // bar.data(aggData, d => d.Major_category)
+      //   .transition()
+      //   .duration(T_DURATION)
+      //   .attr("height", d => yBar(0) - yBar(d['Total'] * (1 - d['ShareWomen'])))
+      //   .attr("y", d => yBar(0) - yBar(d['ShareWomen'] * d['Total']));
+
+      
+    }
+    
+    else{
+      yBar = d3.scaleLinear()
+        .domain([0, d3.max(aggData, d => d[CURRENT_STEP])]).nice()
+        .range([BAR_CHART_HEIGHT - marginBar.bottom, marginBar.top]);
+
+      barLegends.transition()
+        .duration(T_DURATION)
+        .style("opacity", 0);
+
+      bar.data(aggData, d => d.Major_category)
+      .transition()
+      .duration(T_DURATION)
+      .attr("height", d => yBar(0) - yBar(d[o])); 
+      
+      womenBar.transition()
+        .duration(T_DURATION)
+        .style("opacity", 0);
+    }
+
+    if (CURRENT_STEP === "Percent_college_jobs") {
+        yAxisBar = g => g
+            .attr("transform", `translate(${marginBar.left},0)`)
+            .call(d3.axisLeft(yBar).tickFormat(d => d + "%"))
+            .call(g => g.select(".domain").remove())
+    } else {
+        yAxisBar = g => g
+            .attr("transform", `translate(${marginBar.left},0)`)
+            .call(d3.axisLeft(yBar))
+            .call(g => g.select(".domain").remove())
+    }
+
+    // Animate y-axis on rescale between different graphs
+    svg.select(".y-axes")
+      .transition()
+      .call(yAxisBar);
+
+    svg.select(".y-label")
+      .transition()
+      .text(titles[CURRENT_STEP]);
+    
+  };
+
+  barChart = svg.node();
+}
+
+function setupCustomAxes() {
+  xBar = d3.scaleBand()
+    .domain(aggData.map(d => d.Major_category))
+    .range([marginBar.left, BAR_CHART_WIDTH - marginBar.right])
+    .padding(0.1);
+
+  yBar = d3.scaleLinear()
+    .domain([0, d3.max(aggData, d => d[CURRENT_STEP])]).nice()
+    .range([BAR_CHART_HEIGHT - marginBar.bottom, marginBar.top])
+
+  xAxisCustomBar = g => g
+    .attr("transform", `translate(0,${BAR_CHART_HEIGHT - marginBar.bottom})`)
+    .call(d3.axisBottom(xBar).tickSizeOuter(0))
+
+  yAxisCustomBar = g => g
+      .attr("transform", `translate(${marginBar.left},0)`)
+      .call(d3.axisLeft(yBar))
+      .call(g => g.select(".domain").remove());
+
+  gx = svg.append("g")
+      .call(xAxisCustomBar)
+      .selectAll("text")  
+      .style("text-anchor", "end")
+      .attr("dx", "-.8em")
+      .attr("dy", ".15em")
+      .attr("transform", "rotate(-20)");
+
+  gy = svg.append("g")
+      .attr("class", "y-axes")
+      .call(yAxisCustomBar);
+
+  yLabel = svg.append("text")
+    .attr("class", "y-label")
+    .attr("transform", rotate(axisLabelPos.yAxis, BAR_CHART_HEIGHT/2, -90))
+    .style("text-anchor", "middle")
+    .attr("font-size", "11px")
+    .text("Median");
+}
+
+
+
+
 /****** Scatter Plot ******/
 function createSplotChart(data) {
   splot_data = data;
@@ -705,12 +881,12 @@ function configureLegendInteractions(){
     splot_legend.on("mouseover.highlight", function(d) {
         d3.select(this)
           .raise()
-          .style("stroke", "red")
+          .style("fill", "red")
           .style("stroke-width", 1);
     })
     
     splot_legend.on("mouseout.highlight", function(d) {
-        d3.select(this).style("stroke", null);
+        d3.select(this).style("fill", null);
     })
     
     splot_legend.on("mouseover.brush1", function(d) {
@@ -761,7 +937,7 @@ function configureCircleInteractions(){
     let FONT_SIZE = 13;
 
     let xPos = 2/3 * SPLOT_WIDTH; //parseInt(me.attr("cx"), 10) + 3 * parseInt(me.attr("r"), 10);
-    let yPos = SPLOT_HEIGHT - FONT_SIZE * (keys.length + 2); //parseInt(me.attr("cy"), 10) - FONT_SIZE * (keys.length + 1);
+    let yPos = SPLOT_HEIGHT - FONT_SIZE * (keys.length + 3); //parseInt(me.attr("cy"), 10) - FONT_SIZE * (keys.length + 1);
 
     let ttip = splotSvg
       .append("text")
@@ -772,12 +948,17 @@ function configureCircleInteractions(){
       .attr("fill", "#0F0F0F");
 
     let tooltip = "";
+    // tooltip += "Details about Major\n";
+    // ttip.append("tspan")
+    //   .attr("x", xPos)
+    //   .attr("dy", FONT_SIZE)
+    //   .text(tooltip);
 
     for(let i = 0; i < keys.length; i++){
       let key = keys[i];
       let value = d[key];
       if(parseFloat(value)){
-        value = (Math.round(parseFloat(value) * 10) / 10).toString();
+        value = (Math.round(parseFloat(value) * 100) / 100).toString();
         value = value.includes(".") ? value + "%" : value;
       }
 
@@ -788,7 +969,6 @@ function configureCircleInteractions(){
         .attr("dy", FONT_SIZE)
         .text(row);
     }
-    console.log(tooltip);
 
   });
   
@@ -802,7 +982,7 @@ function configureCircleInteractions(){
   splot_circles.on("mouseover.brush1", function(d) {
     splot_circles.filter(e => (d.Major_category !== e.Major_category)).transition().style("fill", "#bbbbbb");
     splot_legend.filter(e => d.Major_category === e)// bring to front
-                .style("stroke", "red")
+                .style("fill", "red")
                 .style("stroke-width", 1);
 
   });
@@ -810,7 +990,7 @@ function configureCircleInteractions(){
   splot_circles.on("mouseout.brush1", function(d) {
     splot_circles.transition().style("fill", d => splot_color(d.Major_category));
     splot_legend.filter(e => d.Major_category === e)// bring to front
-                .style("stroke", null);
+                .style("fill", null);
   });
 
   // Brushing 2
