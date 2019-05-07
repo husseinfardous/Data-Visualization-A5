@@ -73,13 +73,6 @@ let cboxMajor = d3.select("#cboxMajor")
     major_selected = d3.select(this).property("value");
     specData = splot_data.filter(d => d.Major_category === major_selected);
     customBarChart.update();
-
-    // customBar.data(specData, d => d.Major)
-    //   .exit()
-    //   .transition()
-    //   .duration(T_DURATION)
-    //   .attr("height", d => yCustomBar(0))
-    //   .remove();
 });
 
 let cboxStat = d3.select("#cboxStat")
@@ -158,34 +151,6 @@ d3.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/college-ma
   }
 ).then(createSplotChart);
 
-// d3.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/college-majors/recent-grads.csv",
-//   function(data) {
-//     return {
-//       Rank: parseInt(data.Rank),
-//       Major_code: data.Major_code,
-//       Major: data.Major,
-//       Major_category: data.Major_category,
-//       Total: parseInt(data.Total),
-//       Sample_size: parseInt(data.Sample_size),
-//       Men: parseInt(data.Men),
-//       Women: parseInt(data.Women),
-//       ShareWomen: parseFloat(data.ShareWomen),
-//       Employed: parseInt(data.Employed),
-//       Full_time: parseInt(data.Full_time),
-//       Part_time: parseInt(data.Part_time),
-//       Full_time_year_round: parseInt(data.Full_time_year_round),
-//       Unemployed: parseInt(data.Unemployed),
-//       Unemployment_rate: parseFloat(data.Unemployment_rate),
-//       Median: parseInt(data.Median),
-//       P25th: parseInt(data.P25th),
-//       P75th: parseInt(data.P75th),
-//       College_jobs: parseInt(data.College_jobs),
-//       Non_college_jobs: parseInt(data.Non_college_jobs),
-//       Low_wage_jobs: parseInt(data.Low_wage_jobs)
-//     }
-//   }
-// ).then(createVegaChart);
-
 
 // generic window resize listener event
 function handleResize() {
@@ -258,6 +223,8 @@ function handleStepEnter(response) {
   else {
     customSvg
       .attr('display', 'none');
+
+    splotSvg.attr('display', 'none');
 
     svg.transition()
         .duration(T_DURATION)
@@ -587,9 +554,9 @@ function setupCustomBarGraph() {
       .transition()
       .call(yAxisCustomBar);
 
-    // customSvg.select(".y-label")
-    //   .transition()
-    //   .text(titles[CURRENT_STEP]);
+    customSvg.select(".y-label")
+      .transition()
+      .text(tooltipMap[stat_selected]);
     
   };
 
@@ -914,21 +881,8 @@ function configureCircleInteractions(){
   splot_circles.on("mouseover.hover", function(d) {
       
     let me = d3.select(this);
-    // let div = d3.select("body").append("div");
-    
-    // div.attr("id", "details");
-    // div.attr("class", "tooltip");
     
     let keys = Object.keys(d);
-    // keys.shift();
-    // let rows = div.append("table")
-    //   .selectAll("tr")
-    //   .data(keys)
-    //   .enter()
-    //   .append("tr");
-    
-    // rows.append("th").text(key => key);
-    // rows.append("td").text(key => d[key]);
     
     let FONT_SIZE = 13;
 
@@ -944,11 +898,6 @@ function configureCircleInteractions(){
       .attr("fill", "#0F0F0F");
 
     let tooltip = "";
-    // tooltip += "Details about Major\n";
-    // ttip.append("tspan")
-    //   .attr("x", xPos)
-    //   .attr("dy", FONT_SIZE)
-    //   .text(tooltip);
 
     for(let i = 0; i < keys.length; i++){
       let key = keys[i];
@@ -1116,32 +1065,6 @@ function createVegaChart(){
 
   setupCustomAxes();
   setupCustomBarGraph();
-
-
-  // dataset = data;
-  // dataset.forEach( function (d) { d.Major = toTitleCase(d.Major) })
-
-  // vlSpec = {
-  //     "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
-  //     "description": "Major vs. (Median, Unemployment Rate, Share of Women)",
-  //     "autosize": "fit",
-  //     "width": 900,
-  //     "height": 450,
-  //     "data": {
-  //       "values": dataset.filter(d => d.Major_category === major_selected)
-  //     },
-  //     "mark": "bar",
-  //     "encoding": {
-  //       "x": {"field": "Major", "type": "ordinal", 
-  //             "axis" : {"labelAngle" : -30, "labelOverlap" : false, "labelFontSize" : 10,
-  //                       "labelFontWidth" : "bold"}},
-  //       "y": {"field": stat_selected, "type": "quantitative",
-  //             "axis" : {"title" : tooltipMap[stat_selected]}}
-  //     }
-      
-  // };
-
-  // vegaEmbed('#vega-viz', vlSpec);
 
 }
 
