@@ -13,6 +13,12 @@ const marginBar = {
   top: 100
 };
 
+// Custom Bar Chart (at end)
+var xCustomBar, yCustomBar, xAxisCustomBar, yAxisCustomBar;
+var specData;
+var customBarChart;
+var customBar;
+
 
 // Vega viz (last chart)
 
@@ -65,23 +71,42 @@ let cboxMajor = d3.select("#cboxMajor")
   .property("selected", major_selected)
   .on("change", function() {
     major_selected = d3.select(this).property("value");
-    vlSpec.data.values = dataset.filter(d => d.Major_category === major_selected);
-
-    vegaEmbed('#vega-viz', vlSpec);
+    specData = splot_data.filter(d => d.Major_category === major_selected);
+    customBarChart.update();
 });
 
 let cboxStat = d3.select("#cboxStat")
   .property("selected", stat_selected)
   .on("change", function() {
     stat_selected = d3.select(this).property("value");
-    vlSpec.encoding.y.field = stat_selected;
-
-    vegaEmbed('#vega-viz', vlSpec);
+    customBarChart.update();
 });
 
 
 
 
+
+// Scrollama Related Setup
+var main = d3.select('main')
+var scrolly = main.select('#scrolly');
+var figure = scrolly.select('figure');
+var article = scrolly.select('article');
+var step = article.selectAll('.step');
+
+let svg = figure.select('p').select('#intro-bchart');
+let splotSvg = figure.select('p').select('#main-chart');
+let customSvg = figure.select('p').select('#custom-bchart');
+
+BAR_CHART_WIDTH = svg.attr("width");
+BAR_CHART_HEIGHT = svg.attr("height");
+
+SPLOT_WIDTH = splotSvg.attr("width");
+SPLOT_HEIGHT = splotSvg.attr("height");
+
+var CURRENT_STEP = 'Median';
+
+// initialize the scrollama
+var scroller = scrollama();
 
 
 // Data files
@@ -126,54 +151,6 @@ d3.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/college-ma
   }
 ).then(createSplotChart);
 
-d3.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/college-majors/recent-grads.csv",
-  function(data) {
-    return {
-      Rank: parseInt(data.Rank),
-      Major_code: data.Major_code,
-      Major: data.Major,
-      Major_category: data.Major_category,
-      Total: parseInt(data.Total),
-      Sample_size: parseInt(data.Sample_size),
-      Men: parseInt(data.Men),
-      Women: parseInt(data.Women),
-      ShareWomen: parseFloat(data.ShareWomen),
-      Employed: parseInt(data.Employed),
-      Full_time: parseInt(data.Full_time),
-      Part_time: parseInt(data.Part_time),
-      Full_time_year_round: parseInt(data.Full_time_year_round),
-      Unemployed: parseInt(data.Unemployed),
-      Unemployment_rate: parseFloat(data.Unemployment_rate),
-      Median: parseInt(data.Median),
-      P25th: parseInt(data.P25th),
-      P75th: parseInt(data.P75th),
-      College_jobs: parseInt(data.College_jobs),
-      Non_college_jobs: parseInt(data.Non_college_jobs),
-      Low_wage_jobs: parseInt(data.Low_wage_jobs)
-    }
-  }
-).then(createVegaChart);
-
-// using d3 for convenience
-var main = d3.select('main')
-var scrolly = main.select('#scrolly');
-var figure = scrolly.select('figure');
-var article = scrolly.select('article');
-var step = article.selectAll('.step');
-
-let svg = figure.select('p').select('#intro-bchart');
-let splotSvg = figure.select('p').select('#main-chart');
-
-BAR_CHART_WIDTH = svg.attr("width");
-BAR_CHART_HEIGHT = svg.attr("height");
-
-SPLOT_WIDTH = splotSvg.attr("width");
-SPLOT_HEIGHT = splotSvg.attr("height");
-
-var CURRENT_STEP = 'Median';
-
-// initialize the scrollama
-var scroller = scrollama();
 
 // generic window resize listener event
 function handleResize() {
@@ -205,8 +182,7 @@ function handleStepEnter(response) {
 
   // update graphic based on step
    if(CURRENT_STEP.startsWith('splot')){
-      vega = d3.select("#vega-viz").select("canvas");
-      vega.style("opacity", 0);
+
       svg.transition()
       .duration(T_DURATION)
       .attr('display', 'none');
@@ -214,6 +190,9 @@ function handleStepEnter(response) {
       splotSvg.transition()
         .duration(T_DURATION)
         .attr('display', 'true');
+
+      customSvg
+        .attr('display', 'none');
 
       splot.update();
       configureCircleInteractions();
@@ -225,33 +204,34 @@ function handleStepEnter(response) {
 
     splotSvg
       .attr('display', 'none');
-    vega = d3.select("#vega-viz").select("canvas");
-    vega.style("opacity", 1).attr('display', "true");
+
+    customSvg
+      .attr('display', 'true');
+
+    customBarChart.update();
+
   }
   else if(CURRENT_STEP === 'the-end') {
-    console.log("HEREER?????")
-    vega = d3.select("#vega-viz").select("canvas");
-    vega.style("opacity", 0);
+
     svg.attr('display', 'none');
-    console.log(svg);
+
     splotSvg.attr('display', 'true');
+
+    customSvg
+      .attr('display', 'none');
   }
   else {
-    vega = d3.select("#vega-viz").select("canvas");
-    vega.style("opacity", 0);
-    splotSvg.transition()
-      .duration(T_DURATION)
+    customSvg
       .attr('display', 'none');
+
+    splotSvg.attr('display', 'none');
 
     svg.transition()
         .duration(T_DURATION)
         .attr('display', 'true');
     barChart.update(CURRENT_STEP);
-    console.log(barChart)
   }
-  //  barChart.update(CURRENT_STEP);
-  // splot.update();
-  // configureCircleInteractions();
+
 }
 
 function setupStickyfill() {
@@ -478,9 +458,166 @@ function setupAxes() {
 }
 
 
+
+
+
+/****** Custom Bar Chart ******/
+function setupCustomBarGraph() {
+
+  const titles = {  "Median" : "Median Yearly Income",
+                    "Total" : "# of Students",
+                    "women" : "# of Students",
+                    "Percent_college_jobs" : "% of Graduates in Jobs Requiring College Degree"};
+
+  xCustomBar.domain(specData.map(d => d.Major));
+  
+  customBar = customSvg.append("g");
+  //     .attr("fill", "steelblue")
+  //     .selectAll("rect")
+  //     .data(specData, d => d.Major)
+  //     .join("rect")
+  //     .attr("x", -xCustomBar.bandwidth())
+  //     .attr("y", 0)
+  //     .attr("transform", d => rotate(xCustomBar(d.Major), yCustomBar(0), 180))
+  //     .attr("width", xCustomBar.bandwidth());
+
+
+  customSvg.node().update = () => {
+
+    console.log(stat_selected);
+    xCustomBar.domain(specData.map(d => d.Major));
+
+    yCustomBar = d3.scaleLinear()
+      .domain([0, d3.max(specData, d => d[stat_selected])]).nice()
+      .range([BAR_CHART_HEIGHT - marginBar.bottom, marginBar.top]);
+
+    g_custom = customBar
+      // .select("g")
+      .selectAll("rect")
+      .data(specData, d => d.Major);
+
+    g_custom
+      .exit()
+      // .transition()
+      // .duration(T_DURATION)
+      // .attr("height", d => yCustomBar(0))
+      .remove();
+
+    g_custom
+      .enter()
+      .append("rect")
+      .attr("fill", "steelblue")
+      .attr("x", -xCustomBar.bandwidth())
+      .attr("y", 0)
+      .attr("transform", d => rotate(xCustomBar(d.Major), yCustomBar(0), 180))
+      .attr("width", xCustomBar.bandwidth())
+      .transition()
+      .duration(T_DURATION)
+      .attr("height", d => { let h = yCustomBar(0) - yCustomBar(d[stat_selected]); 
+                              h = h ? h : 0;
+                              console.log(h); 
+                              return h;
+                            } ); 
+
+    g_custom
+      .transition()
+      .duration(T_DURATION)
+      .attr("height", d => yCustomBar(0) - yCustomBar(d[stat_selected])); 
+
+    // .transition()
+    // .duration(T_DURATION)
+    // .attr("height", d => yCustomBar(0) - yCustomBar(d[stat_selected])); 
+
+    // if (CURRENT_STEP === "Percent_college_jobs") {
+    //     yAxisCustomBar = g => g
+    //         .attr("transform", `translate(${marginBar.left},0)`)
+    //         .call(d3.axisLeft(yCustomBar).tickFormat(d => d + "%"))
+    //         .call(g => g.select(".domain").remove())
+    // } else {
+        yAxisCustomBar = g => g
+            .attr("transform", `translate(${marginBar.left},0)`)
+            .call(d3.axisLeft(yCustomBar))
+            .call(g => g.select(".domain").remove())
+    // }
+
+    // Animate axes on rescale between different graphs
+    customSvg.select(".x-axes")
+      .transition()
+      .call(xAxisCustomBar)
+      .selectAll("text")  
+      .style("text-anchor", "end")
+      .attr("dx", "-.8em")
+      .attr("dy", ".15em")
+      .attr("transform", "rotate(-20)");
+
+    customSvg.select(".y-axes")
+      .transition()
+      .call(yAxisCustomBar);
+
+    customSvg.select(".y-label")
+      .transition()
+      .text(tooltipMap[stat_selected]);
+    
+  };
+
+  customBarChart = customSvg.node();
+}
+
+function setupCustomAxes() {
+  xCustomBar = d3.scaleBand()
+    .domain(specData.map(d => d.Major))
+    .range([marginBar.left, BAR_CHART_WIDTH - marginBar.right])
+    .padding(0.1);
+
+  yCustomBar = d3.scaleLinear()
+    .domain([0, d3.max(specData, d => d[stat_selected])]).nice()
+    .range([BAR_CHART_HEIGHT - marginBar.bottom, marginBar.top])
+
+  xAxisCustomBar = g => g
+    .attr("transform", `translate(0,${BAR_CHART_HEIGHT - marginBar.bottom})`)
+    .call(d3.axisBottom(xCustomBar).tickSizeOuter(0))
+
+  yAxisCustomBar = g => g
+      .attr("transform", `translate(${marginBar.left},0)`)
+      .call(d3.axisLeft(yCustomBar))
+      .call(g => g.select(".domain").remove());
+
+  gx = customSvg.append("g")
+      .attr("class", "x-axes")
+      .call(xAxisCustomBar)
+      .selectAll("text")  
+      .style("text-anchor", "end")
+      .attr("dx", "-.8em")
+      .attr("dy", ".15em")
+      // .attr("class", "x-axes")
+      .attr("transform", "rotate(-20)");
+
+  gy = customSvg.append("g")
+      .attr("class", "y-axes")
+      .call(yAxisCustomBar);
+
+  yLabel = customSvg.append("text")
+    .attr("class", "y-label")
+    .attr("transform", rotate(axisLabelPos.yAxis, BAR_CHART_HEIGHT/2, -90))
+    .style("text-anchor", "middle")
+    .attr("font-size", "11px")
+    .text("Median");
+
+  // xLabel = customSvg.append("text")
+  //   .attr("class", "x-label")
+  //   .attr("transform", rotate(axisLabelPos.yAxis, BAR_CHART_HEIGHT/2, -90))
+  //   .style("text-anchor", "middle")
+  //   .attr("font-size", "11px")
+  //   .text("Median");
+}
+
+
+
+
 /****** Scatter Plot ******/
 function createSplotChart(data) {
   splot_data = data;
+  specData = splot_data.filter(d => d.Major_category === major_selected);
 
   // Secondary data filtering
   major_categs = d3.set(splot_data, d => d.Major_category);
@@ -493,6 +630,8 @@ function createSplotChart(data) {
   setupSplotAxes();
   computeSplotQuantiles();
   setupScatterPlot();
+
+  createVegaChart();
 }
 
 
@@ -705,12 +844,12 @@ function configureLegendInteractions(){
     splot_legend.on("mouseover.highlight", function(d) {
         d3.select(this)
           .raise()
-          .style("stroke", "red")
+          .style("fill", "red")
           .style("stroke-width", 1);
     })
     
     splot_legend.on("mouseout.highlight", function(d) {
-        d3.select(this).style("stroke", null);
+        d3.select(this).style("fill", null);
     })
     
     splot_legend.on("mouseover.brush1", function(d) {
@@ -742,26 +881,13 @@ function configureCircleInteractions(){
   splot_circles.on("mouseover.hover", function(d) {
       
     let me = d3.select(this);
-    // let div = d3.select("body").append("div");
-    
-    // div.attr("id", "details");
-    // div.attr("class", "tooltip");
     
     let keys = Object.keys(d);
-    // keys.shift();
-    // let rows = div.append("table")
-    //   .selectAll("tr")
-    //   .data(keys)
-    //   .enter()
-    //   .append("tr");
-    
-    // rows.append("th").text(key => key);
-    // rows.append("td").text(key => d[key]);
     
     let FONT_SIZE = 13;
 
     let xPos = 2/3 * SPLOT_WIDTH; //parseInt(me.attr("cx"), 10) + 3 * parseInt(me.attr("r"), 10);
-    let yPos = SPLOT_HEIGHT - FONT_SIZE * (keys.length + 2); //parseInt(me.attr("cy"), 10) - FONT_SIZE * (keys.length + 1);
+    let yPos = SPLOT_HEIGHT - FONT_SIZE * (keys.length + 3); //parseInt(me.attr("cy"), 10) - FONT_SIZE * (keys.length + 1);
 
     let ttip = splotSvg
       .append("text")
@@ -777,7 +903,7 @@ function configureCircleInteractions(){
       let key = keys[i];
       let value = d[key];
       if(parseFloat(value)){
-        value = (Math.round(parseFloat(value) * 10) / 10).toString();
+        value = (Math.round(parseFloat(value) * 100) / 100).toString();
         value = value.includes(".") ? value + "%" : value;
       }
 
@@ -788,7 +914,6 @@ function configureCircleInteractions(){
         .attr("dy", FONT_SIZE)
         .text(row);
     }
-    console.log(tooltip);
 
   });
   
@@ -802,7 +927,7 @@ function configureCircleInteractions(){
   splot_circles.on("mouseover.brush1", function(d) {
     splot_circles.filter(e => (d.Major_category !== e.Major_category)).transition().style("fill", "#bbbbbb");
     splot_legend.filter(e => d.Major_category === e)// bring to front
-                .style("stroke", "red")
+                .style("fill", "red")
                 .style("stroke-width", 1);
 
   });
@@ -810,7 +935,7 @@ function configureCircleInteractions(){
   splot_circles.on("mouseout.brush1", function(d) {
     splot_circles.transition().style("fill", d => splot_color(d.Major_category));
     splot_legend.filter(e => d.Major_category === e)// bring to front
-                .style("stroke", null);
+                .style("fill", null);
   });
 
   // Brushing 2
@@ -911,7 +1036,6 @@ function populateComboBoxs(){
     .attr("value", d => d)
     .text(d => d);
 
-  console.log(Object.keys(tooltipMap).slice(2));
   let optionsStat = cboxStat.selectAll("option")
     .data(Object.keys(tooltipMap).slice(2), d => d)
     .enter()
@@ -937,31 +1061,10 @@ function toTitleCase(str) {
             });
     return str.join(' ');
 }
-function createVegaChart(data){
-  dataset = data;
-  dataset.forEach( function (d) { d.Major = toTitleCase(d.Major) })
+function createVegaChart(){
 
-  vlSpec = {
-      "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
-      "description": "Major vs. (Median, Unemployment Rate, Share of Women)",
-      "autosize": "fit",
-      "width": 900,
-      "height": 450,
-      "data": {
-        "values": dataset.filter(d => d.Major_category === major_selected)
-      },
-      "mark": "bar",
-      "encoding": {
-        "x": {"field": "Major", "type": "ordinal", 
-              "axis" : {"labelAngle" : -30, "labelOverlap" : false, "labelFontSize" : 10,
-                        "labelFontWidth" : "bold"}},
-        "y": {"field": stat_selected, "type": "quantitative",
-              "axis" : {"title" : tooltipMap[stat_selected]}}
-      }
-      
-  };
-
-  vegaEmbed('#vega-viz', vlSpec);
+  setupCustomAxes();
+  setupCustomBarGraph();
 
 }
 
