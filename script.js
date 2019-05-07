@@ -15,7 +15,9 @@ const marginBar = {
 
 // Custom Bar Chart (at end)
 var xCustomBar, yCustomBar, xAxisCustomBar, yAxisCustomBar;
+var specData;
 var customBarChart;
+var customBar;
 
 
 // Vega viz (last chart)
@@ -69,18 +71,22 @@ let cboxMajor = d3.select("#cboxMajor")
   .property("selected", major_selected)
   .on("change", function() {
     major_selected = d3.select(this).property("value");
-    vlSpec.data.values = dataset.filter(d => d.Major_category === major_selected);
+    specData = splot_data.filter(d => d.Major_category === major_selected);
+    customBarChart.update();
 
-    vegaEmbed('#vega-viz', vlSpec);
+    // customBar.data(specData, d => d.Major)
+    //   .exit()
+    //   .transition()
+    //   .duration(T_DURATION)
+    //   .attr("height", d => yCustomBar(0))
+    //   .remove();
 });
 
 let cboxStat = d3.select("#cboxStat")
   .property("selected", stat_selected)
   .on("change", function() {
     stat_selected = d3.select(this).property("value");
-    vlSpec.encoding.y.field = stat_selected;
-
-    vegaEmbed('#vega-viz', vlSpec);
+    customBarChart.update();
 });
 
 
@@ -152,33 +158,33 @@ d3.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/college-ma
   }
 ).then(createSplotChart);
 
-d3.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/college-majors/recent-grads.csv",
-  function(data) {
-    return {
-      Rank: parseInt(data.Rank),
-      Major_code: data.Major_code,
-      Major: data.Major,
-      Major_category: data.Major_category,
-      Total: parseInt(data.Total),
-      Sample_size: parseInt(data.Sample_size),
-      Men: parseInt(data.Men),
-      Women: parseInt(data.Women),
-      ShareWomen: parseFloat(data.ShareWomen),
-      Employed: parseInt(data.Employed),
-      Full_time: parseInt(data.Full_time),
-      Part_time: parseInt(data.Part_time),
-      Full_time_year_round: parseInt(data.Full_time_year_round),
-      Unemployed: parseInt(data.Unemployed),
-      Unemployment_rate: parseFloat(data.Unemployment_rate),
-      Median: parseInt(data.Median),
-      P25th: parseInt(data.P25th),
-      P75th: parseInt(data.P75th),
-      College_jobs: parseInt(data.College_jobs),
-      Non_college_jobs: parseInt(data.Non_college_jobs),
-      Low_wage_jobs: parseInt(data.Low_wage_jobs)
-    }
-  }
-).then(createVegaChart);
+// d3.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/college-majors/recent-grads.csv",
+//   function(data) {
+//     return {
+//       Rank: parseInt(data.Rank),
+//       Major_code: data.Major_code,
+//       Major: data.Major,
+//       Major_category: data.Major_category,
+//       Total: parseInt(data.Total),
+//       Sample_size: parseInt(data.Sample_size),
+//       Men: parseInt(data.Men),
+//       Women: parseInt(data.Women),
+//       ShareWomen: parseFloat(data.ShareWomen),
+//       Employed: parseInt(data.Employed),
+//       Full_time: parseInt(data.Full_time),
+//       Part_time: parseInt(data.Part_time),
+//       Full_time_year_round: parseInt(data.Full_time_year_round),
+//       Unemployed: parseInt(data.Unemployed),
+//       Unemployment_rate: parseFloat(data.Unemployment_rate),
+//       Median: parseInt(data.Median),
+//       P25th: parseInt(data.P25th),
+//       P75th: parseInt(data.P75th),
+//       College_jobs: parseInt(data.College_jobs),
+//       Non_college_jobs: parseInt(data.Non_college_jobs),
+//       Low_wage_jobs: parseInt(data.Low_wage_jobs)
+//     }
+//   }
+// ).then(createVegaChart);
 
 
 // generic window resize listener event
@@ -211,8 +217,7 @@ function handleStepEnter(response) {
 
   // update graphic based on step
    if(CURRENT_STEP.startsWith('splot')){
-      vega = d3.select("#vega-viz").select("canvas");
-      vega.style("opacity", 0);
+
       svg.transition()
       .duration(T_DURATION)
       .attr('display', 'none');
@@ -220,6 +225,9 @@ function handleStepEnter(response) {
       splotSvg.transition()
         .duration(T_DURATION)
         .attr('display', 'true');
+
+      customSvg
+        .attr('display', 'none');
 
       splot.update();
       configureCircleInteractions();
@@ -231,22 +239,24 @@ function handleStepEnter(response) {
 
     splotSvg
       .attr('display', 'none');
-    // vega = d3.select("#vega-viz").select("canvas");
-    // vega.style("opacity", 1).attr('display', "true");
+
+    customSvg
+      .attr('display', 'true');
+
+    customBarChart.update();
 
   }
   else if(CURRENT_STEP === 'the-end') {
-    vega = d3.select("#vega-viz").select("canvas");
-    vega.style("opacity", 0);
+
     svg.attr('display', 'none');
-    console.log(svg);
+
     splotSvg.attr('display', 'true');
+
+    customSvg
+      .attr('display', 'none');
   }
   else {
-    vega = d3.select("#vega-viz").select("canvas");
-    vega.style("opacity", 0);
-    splotSvg.transition()
-      .duration(T_DURATION)
+    customSvg
       .attr('display', 'none');
 
     svg.transition()
@@ -254,9 +264,7 @@ function handleStepEnter(response) {
         .attr('display', 'true');
     barChart.update(CURRENT_STEP);
   }
-  //  barChart.update(CURRENT_STEP);
-  // splot.update();
-  // configureCircleInteractions();
+
 }
 
 function setupStickyfill() {
@@ -488,71 +496,98 @@ function setupAxes() {
 
 /****** Custom Bar Chart ******/
 function setupCustomBarGraph() {
-  
-  const LEGEND_X = 800;
-  const LEGEND_SIZE = 10;
 
   const titles = {  "Median" : "Median Yearly Income",
                     "Total" : "# of Students",
                     "women" : "# of Students",
                     "Percent_college_jobs" : "% of Graduates in Jobs Requiring College Degree"};
 
-  xCustomBar.domain(splot_data.map(d => d.Major));
+  xCustomBar.domain(specData.map(d => d.Major));
   
-  // Different bar graphs (explicitly set womenBar for the ShareWomen stacked bar chart)
-  const bar = svg.append("g")
-      .attr("fill", "steelblue")
+  customBar = customSvg.append("g");
+  //     .attr("fill", "steelblue")
+  //     .selectAll("rect")
+  //     .data(specData, d => d.Major)
+  //     .join("rect")
+  //     .attr("x", -xCustomBar.bandwidth())
+  //     .attr("y", 0)
+  //     .attr("transform", d => rotate(xCustomBar(d.Major), yCustomBar(0), 180))
+  //     .attr("width", xCustomBar.bandwidth());
+
+
+  customSvg.node().update = () => {
+
+    console.log(stat_selected);
+    xCustomBar.domain(specData.map(d => d.Major));
+
+    yCustomBar = d3.scaleLinear()
+      .domain([0, d3.max(specData, d => d[stat_selected])]).nice()
+      .range([BAR_CHART_HEIGHT - marginBar.bottom, marginBar.top]);
+
+    g_custom = customBar
+      // .select("g")
       .selectAll("rect")
-      .data(splot_data, d => d.Major)
-      .join("rect")
+      .data(specData, d => d.Major);
+
+    g_custom
+      .exit()
+      // .transition()
+      // .duration(T_DURATION)
+      // .attr("height", d => yCustomBar(0))
+      .remove();
+
+    g_custom
+      .enter()
+      .append("rect")
+      .attr("fill", "steelblue")
       .attr("x", -xCustomBar.bandwidth())
       .attr("y", 0)
       .attr("transform", d => rotate(xCustomBar(d.Major), yCustomBar(0), 180))
-      .attr("width", xCustomBar.bandwidth());
-
-
-  customSvg.node().update = (o) => {
-
-    // Visibility switch
-    if(CURRENT_STEP.startsWith('splot') || CURRENT_STEP === 'smult'){
-      customSvg.transition()
+      .attr("width", xCustomBar.bandwidth())
+      .transition()
       .duration(T_DURATION)
-      .attr('display', 'none');
-        return;
-    }
-    else{
-      customSvg.attr('display', 'true')
-    }
-    
-    yCustomBar = d3.scaleLinear()
-      .domain([0, d3.max(splot_data, d => d[CURRENT_STEP])]).nice()
-      .range([BAR_CHART_HEIGHT - marginBar.bottom, marginBar.top]);
+      .attr("height", d => { let h = yCustomBar(0) - yCustomBar(d[stat_selected]); 
+                              h = h ? h : 0;
+                              console.log(h); 
+                              return h;
+                            } ); 
 
+    g_custom
+      .transition()
+      .duration(T_DURATION)
+      .attr("height", d => yCustomBar(0) - yCustomBar(d[stat_selected])); 
 
-    bar.data(splot_data, d => d.Major)
-    .transition()
-    .duration(T_DURATION)
-    .attr("height", d => yCustomBar(0) - yCustomBar(d[o])); 
-    
+    // .transition()
+    // .duration(T_DURATION)
+    // .attr("height", d => yCustomBar(0) - yCustomBar(d[stat_selected])); 
 
-    if (CURRENT_STEP === "Percent_college_jobs") {
-        yAxisCustomBar = g => g
-            .attr("transform", `translate(${marginBar.left},0)`)
-            .call(d3.axisLeft(yCustomBar).tickFormat(d => d + "%"))
-            .call(g => g.select(".domain").remove())
-    } else {
+    // if (CURRENT_STEP === "Percent_college_jobs") {
+    //     yAxisCustomBar = g => g
+    //         .attr("transform", `translate(${marginBar.left},0)`)
+    //         .call(d3.axisLeft(yCustomBar).tickFormat(d => d + "%"))
+    //         .call(g => g.select(".domain").remove())
+    // } else {
         yAxisCustomBar = g => g
             .attr("transform", `translate(${marginBar.left},0)`)
             .call(d3.axisLeft(yCustomBar))
             .call(g => g.select(".domain").remove())
-    }
+    // }
 
-    // Animate y-axis on rescale between different graphs
+    // Animate axes on rescale between different graphs
+    customSvg.select(".x-axes")
+      .transition()
+      .call(xAxisCustomBar)
+      .selectAll("text")  
+      .style("text-anchor", "end")
+      .attr("dx", "-.8em")
+      .attr("dy", ".15em")
+      .attr("transform", "rotate(-20)");
+
     customSvg.select(".y-axes")
       .transition()
       .call(yAxisCustomBar);
 
-    // svg.select(".y-label")
+    // customSvg.select(".y-label")
     //   .transition()
     //   .text(titles[CURRENT_STEP]);
     
@@ -563,29 +598,31 @@ function setupCustomBarGraph() {
 
 function setupCustomAxes() {
   xCustomBar = d3.scaleBand()
-    .domain(aggData.map(d => d.Major_category))
+    .domain(specData.map(d => d.Major))
     .range([marginBar.left, BAR_CHART_WIDTH - marginBar.right])
     .padding(0.1);
 
   yCustomBar = d3.scaleLinear()
-    .domain([0, d3.max(aggData, d => d[CURRENT_STEP])]).nice()
+    .domain([0, d3.max(specData, d => d[stat_selected])]).nice()
     .range([BAR_CHART_HEIGHT - marginBar.bottom, marginBar.top])
 
   xAxisCustomBar = g => g
     .attr("transform", `translate(0,${BAR_CHART_HEIGHT - marginBar.bottom})`)
-    .call(d3.axisBottom(xBar).tickSizeOuter(0))
+    .call(d3.axisBottom(xCustomBar).tickSizeOuter(0))
 
   yAxisCustomBar = g => g
       .attr("transform", `translate(${marginBar.left},0)`)
-      .call(d3.axisLeft(yBar))
+      .call(d3.axisLeft(yCustomBar))
       .call(g => g.select(".domain").remove());
 
   gx = customSvg.append("g")
+      .attr("class", "x-axes")
       .call(xAxisCustomBar)
       .selectAll("text")  
       .style("text-anchor", "end")
       .attr("dx", "-.8em")
       .attr("dy", ".15em")
+      // .attr("class", "x-axes")
       .attr("transform", "rotate(-20)");
 
   gy = customSvg.append("g")
@@ -598,6 +635,13 @@ function setupCustomAxes() {
     .style("text-anchor", "middle")
     .attr("font-size", "11px")
     .text("Median");
+
+  // xLabel = customSvg.append("text")
+  //   .attr("class", "x-label")
+  //   .attr("transform", rotate(axisLabelPos.yAxis, BAR_CHART_HEIGHT/2, -90))
+  //   .style("text-anchor", "middle")
+  //   .attr("font-size", "11px")
+  //   .text("Median");
 }
 
 
@@ -606,6 +650,7 @@ function setupCustomAxes() {
 /****** Scatter Plot ******/
 function createSplotChart(data) {
   splot_data = data;
+  specData = splot_data.filter(d => d.Major_category === major_selected);
 
   // Secondary data filtering
   major_categs = d3.set(splot_data, d => d.Major_category);
@@ -618,6 +663,8 @@ function createSplotChart(data) {
   setupSplotAxes();
   computeSplotQuantiles();
   setupScatterPlot();
+
+  createVegaChart();
 }
 
 
@@ -1040,7 +1087,6 @@ function populateComboBoxs(){
     .attr("value", d => d)
     .text(d => d);
 
-  console.log(Object.keys(tooltipMap).slice(2));
   let optionsStat = cboxStat.selectAll("option")
     .data(Object.keys(tooltipMap).slice(2), d => d)
     .enter()
@@ -1066,31 +1112,36 @@ function toTitleCase(str) {
             });
     return str.join(' ');
 }
-function createVegaChart(data){
-  dataset = data;
-  dataset.forEach( function (d) { d.Major = toTitleCase(d.Major) })
+function createVegaChart(){
 
-  vlSpec = {
-      "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
-      "description": "Major vs. (Median, Unemployment Rate, Share of Women)",
-      "autosize": "fit",
-      "width": 900,
-      "height": 450,
-      "data": {
-        "values": dataset.filter(d => d.Major_category === major_selected)
-      },
-      "mark": "bar",
-      "encoding": {
-        "x": {"field": "Major", "type": "ordinal", 
-              "axis" : {"labelAngle" : -30, "labelOverlap" : false, "labelFontSize" : 10,
-                        "labelFontWidth" : "bold"}},
-        "y": {"field": stat_selected, "type": "quantitative",
-              "axis" : {"title" : tooltipMap[stat_selected]}}
-      }
+  setupCustomAxes();
+  setupCustomBarGraph();
+
+
+  // dataset = data;
+  // dataset.forEach( function (d) { d.Major = toTitleCase(d.Major) })
+
+  // vlSpec = {
+  //     "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
+  //     "description": "Major vs. (Median, Unemployment Rate, Share of Women)",
+  //     "autosize": "fit",
+  //     "width": 900,
+  //     "height": 450,
+  //     "data": {
+  //       "values": dataset.filter(d => d.Major_category === major_selected)
+  //     },
+  //     "mark": "bar",
+  //     "encoding": {
+  //       "x": {"field": "Major", "type": "ordinal", 
+  //             "axis" : {"labelAngle" : -30, "labelOverlap" : false, "labelFontSize" : 10,
+  //                       "labelFontWidth" : "bold"}},
+  //       "y": {"field": stat_selected, "type": "quantitative",
+  //             "axis" : {"title" : tooltipMap[stat_selected]}}
+  //     }
       
-  };
+  // };
 
-  vegaEmbed('#vega-viz', vlSpec);
+  // vegaEmbed('#vega-viz', vlSpec);
 
 }
 
